@@ -1,4 +1,4 @@
-﻿/* ========================================================================
+/* ========================================================================
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
@@ -384,7 +384,7 @@ namespace NUnit.Opc.Ua.Gds.Test
                     }
                     else
                     {
-                        throw sre;
+                        throw;
                     }
                 }
             } while (certificate == null);
@@ -527,7 +527,7 @@ namespace NUnit.Opc.Ua.Gds.Test
                     }
                     else
                     {
-                        throw sre;
+                        throw;
                     }
                 }
             } while (certificate == null);

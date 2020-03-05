@@ -1,4 +1,4 @@
-﻿/* ========================================================================
+/* ========================================================================
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
@@ -28,7 +28,6 @@
  * ======================================================================*/
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
@@ -37,7 +36,7 @@ using NUnit.Framework;
 namespace Opc.Ua.Gds.Test
 {
 
-    public class X509TestUtils
+    public static class X509TestUtils
     {
         public static void VerifyApplicationCertIntegrity(byte[] certificate, byte[] privateKey, string privateKeyPassword, string privateKeyFormat, byte[][] issuerCertificates)
         {
