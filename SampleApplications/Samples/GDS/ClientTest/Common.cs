@@ -1,4 +1,4 @@
-﻿/* ========================================================================
+/* ========================================================================
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
@@ -112,6 +112,7 @@ namespace Opc.Ua.Gds.Test
             StringCollection discoveryUrls = new StringCollection();
             StringCollection serverCapabilities = new StringCollection();
             int port = (_dataGenerator.GetRandomInt16() & 0x1fff) + 50000;
+            string locale = _randomSource.NextInt32(5) == 0 ? null : _dataGenerator.GetRandomLocalizedText().Locale;
             switch (appType)
             {
                 case ApplicationType.Client:
@@ -131,11 +132,9 @@ namespace Opc.Ua.Gds.Test
                     serverCapabilities = RandomServerCapabilities();
                     break;
             }
-            ApplicationTestData testData = new ApplicationTestData
-            {
-                ApplicationRecord = new ApplicationRecordDataType
-                {
-                    ApplicationNames = new LocalizedTextCollection { new LocalizedText("en-us", appName) },
+            ApplicationTestData testData = new ApplicationTestData {
+                ApplicationRecord = new ApplicationRecordDataType {
+                    ApplicationNames = new LocalizedTextCollection { new LocalizedText(locale, appName) },
                     ApplicationUri = appUri,
                     ApplicationType = appType,
                     ProductUri = prodUri,
@@ -286,7 +285,7 @@ namespace Opc.Ua.Gds.Test
         }
     }
 
-    public class TestUtils
+    public static class TestUtils
     {
         public static void CleanupTrustList(ICertificateStore store, bool dispose = true)
         {

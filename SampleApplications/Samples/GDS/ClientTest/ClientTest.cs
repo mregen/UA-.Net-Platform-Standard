@@ -1,4 +1,4 @@
-﻿/* ========================================================================
+/* ========================================================================
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
@@ -1045,7 +1045,6 @@ namespace NUnit.Opc.Ua.Gds.Test
         #region Private Fields
         private const int goodApplicationsTestCount = 10;
         private const int invalidApplicationsTestCount = 10;
-        private const int randomStart = 1;
         private ApplicationTestDataGenerator _appTestDataGenerator;
         private GlobalDiscoveryTestServer _server;
         private GlobalDiscoveryTestClient _gdsClient;
