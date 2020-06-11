@@ -2,7 +2,7 @@
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,7 +11,7 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -29,6 +29,11 @@
 
 using System;
 using System.Collections.Generic;
+
+#if (NET_STANDARD_ASYNC)
+using System.Threading;
+using System.Threading.Tasks;
+#endif
 
 namespace Opc.Ua
 {
@@ -145,6 +150,75 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the CreateSession service using async Task based request.
+        /// </summary>
+        public virtual async Task<CreateSessionResponse> CreateSessionAsync(
+            RequestHeader          requestHeader,
+            ApplicationDescription clientDescription,
+            string                 serverUri,
+            string                 endpointUrl,
+            string                 sessionName,
+            byte[]                 clientNonce,
+            byte[]                 clientCertificate,
+            double                 requestedSessionTimeout,
+            uint                   maxResponseMessageSize,
+            CancellationToken      cancellationToken)
+        {
+            CreateSessionRequest request = new CreateSessionRequest();
+            CreateSessionResponse response = null;
+
+            request.RequestHeader           = requestHeader;
+            request.ClientDescription       = clientDescription;
+            request.ServerUri               = serverUri;
+            request.EndpointUrl             = endpointUrl;
+            request.SessionName             = sessionName;
+            request.ClientNonce             = clientNonce;
+            request.ClientCertificate       = clientCertificate;
+            request.RequestedSessionTimeout = requestedSessionTimeout;
+            request.MaxResponseMessageSize  = maxResponseMessageSize;
+
+            UpdateRequestHeader(request, requestHeader == null, "CreateSession");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (CreateSessionResponse)genericResponse;
+                }
+                else
+                {
+                    CreateSessionResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginCreateSession, InnerChannel.EndCreateSession, new CreateSessionMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.CreateSessionResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.CreateSessionResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "CreateSession");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the CreateSession service.
@@ -315,6 +389,69 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the ActivateSession service using async Task based request.
+        /// </summary>
+        public virtual async Task<ActivateSessionResponse> ActivateSessionAsync(
+            RequestHeader                       requestHeader,
+            SignatureData                       clientSignature,
+            SignedSoftwareCertificateCollection clientSoftwareCertificates,
+            StringCollection                    localeIds,
+            ExtensionObject                     userIdentityToken,
+            SignatureData                       userTokenSignature,
+            CancellationToken                   cancellationToken)
+        {
+            ActivateSessionRequest request = new ActivateSessionRequest();
+            ActivateSessionResponse response = null;
+
+            request.RequestHeader              = requestHeader;
+            request.ClientSignature            = clientSignature;
+            request.ClientSoftwareCertificates = clientSoftwareCertificates;
+            request.LocaleIds                  = localeIds;
+            request.UserIdentityToken          = userIdentityToken;
+            request.UserTokenSignature         = userTokenSignature;
+
+            UpdateRequestHeader(request, requestHeader == null, "ActivateSession");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (ActivateSessionResponse)genericResponse;
+                }
+                else
+                {
+                    ActivateSessionResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginActivateSession, InnerChannel.EndActivateSession, new ActivateSessionMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.ActivateSessionResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.ActivateSessionResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "ActivateSession");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the ActivateSession service.
         /// </summary>
@@ -452,6 +589,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the CloseSession service using async Task based request.
+        /// </summary>
+        public virtual async Task<CloseSessionResponse> CloseSessionAsync(
+            RequestHeader     requestHeader,
+            bool              deleteSubscriptions,
+            CancellationToken cancellationToken)
+        {
+            CloseSessionRequest request = new CloseSessionRequest();
+            CloseSessionResponse response = null;
+
+            request.RequestHeader       = requestHeader;
+            request.DeleteSubscriptions = deleteSubscriptions;
+
+            UpdateRequestHeader(request, requestHeader == null, "CloseSession");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (CloseSessionResponse)genericResponse;
+                }
+                else
+                {
+                    CloseSessionResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginCloseSession, InnerChannel.EndCloseSession, new CloseSessionMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.CloseSessionResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.CloseSessionResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "CloseSession");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the CloseSession service.
         /// </summary>
@@ -576,6 +768,61 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Cancel service using async Task based request.
+        /// </summary>
+        public virtual async Task<CancelResponse> CancelAsync(
+            RequestHeader     requestHeader,
+            uint              requestHandle,
+            CancellationToken cancellationToken)
+        {
+            CancelRequest request = new CancelRequest();
+            CancelResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.RequestHandle = requestHandle;
+
+            UpdateRequestHeader(request, requestHeader == null, "Cancel");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (CancelResponse)genericResponse;
+                }
+                else
+                {
+                    CancelResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginCancel, InnerChannel.EndCancel, new CancelMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.CancelResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.CancelResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Cancel");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the Cancel service.
@@ -705,6 +952,61 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the AddNodes service using async Task based request.
+        /// </summary>
+        public virtual async Task<AddNodesResponse> AddNodesAsync(
+            RequestHeader          requestHeader,
+            AddNodesItemCollection nodesToAdd,
+            CancellationToken      cancellationToken)
+        {
+            AddNodesRequest request = new AddNodesRequest();
+            AddNodesResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.NodesToAdd    = nodesToAdd;
+
+            UpdateRequestHeader(request, requestHeader == null, "AddNodes");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (AddNodesResponse)genericResponse;
+                }
+                else
+                {
+                    AddNodesResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginAddNodes, InnerChannel.EndAddNodes, new AddNodesMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.AddNodesResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.AddNodesResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "AddNodes");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the AddNodes service.
@@ -837,6 +1139,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the AddReferences service using async Task based request.
+        /// </summary>
+        public virtual async Task<AddReferencesResponse> AddReferencesAsync(
+            RequestHeader               requestHeader,
+            AddReferencesItemCollection referencesToAdd,
+            CancellationToken           cancellationToken)
+        {
+            AddReferencesRequest request = new AddReferencesRequest();
+            AddReferencesResponse response = null;
+
+            request.RequestHeader   = requestHeader;
+            request.ReferencesToAdd = referencesToAdd;
+
+            UpdateRequestHeader(request, requestHeader == null, "AddReferences");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (AddReferencesResponse)genericResponse;
+                }
+                else
+                {
+                    AddReferencesResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginAddReferences, InnerChannel.EndAddReferences, new AddReferencesMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.AddReferencesResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.AddReferencesResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "AddReferences");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the AddReferences service.
         /// </summary>
@@ -968,6 +1325,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the DeleteNodes service using async Task based request.
+        /// </summary>
+        public virtual async Task<DeleteNodesResponse> DeleteNodesAsync(
+            RequestHeader             requestHeader,
+            DeleteNodesItemCollection nodesToDelete,
+            CancellationToken         cancellationToken)
+        {
+            DeleteNodesRequest request = new DeleteNodesRequest();
+            DeleteNodesResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.NodesToDelete = nodesToDelete;
+
+            UpdateRequestHeader(request, requestHeader == null, "DeleteNodes");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (DeleteNodesResponse)genericResponse;
+                }
+                else
+                {
+                    DeleteNodesResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginDeleteNodes, InnerChannel.EndDeleteNodes, new DeleteNodesMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.DeleteNodesResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.DeleteNodesResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "DeleteNodes");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the DeleteNodes service.
         /// </summary>
@@ -1098,6 +1510,61 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the DeleteReferences service using async Task based request.
+        /// </summary>
+        public virtual async Task<DeleteReferencesResponse> DeleteReferencesAsync(
+            RequestHeader                  requestHeader,
+            DeleteReferencesItemCollection referencesToDelete,
+            CancellationToken              cancellationToken)
+        {
+            DeleteReferencesRequest request = new DeleteReferencesRequest();
+            DeleteReferencesResponse response = null;
+
+            request.RequestHeader      = requestHeader;
+            request.ReferencesToDelete = referencesToDelete;
+
+            UpdateRequestHeader(request, requestHeader == null, "DeleteReferences");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (DeleteReferencesResponse)genericResponse;
+                }
+                else
+                {
+                    DeleteReferencesResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginDeleteReferences, InnerChannel.EndDeleteReferences, new DeleteReferencesMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.DeleteReferencesResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.DeleteReferencesResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "DeleteReferences");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the DeleteReferences service.
@@ -1233,6 +1700,65 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Browse service using async Task based request.
+        /// </summary>
+        public virtual async Task<BrowseResponse> BrowseAsync(
+            RequestHeader               requestHeader,
+            ViewDescription             view,
+            uint                        requestedMaxReferencesPerNode,
+            BrowseDescriptionCollection nodesToBrowse,
+            CancellationToken           cancellationToken)
+        {
+            BrowseRequest request = new BrowseRequest();
+            BrowseResponse response = null;
+
+            request.RequestHeader                 = requestHeader;
+            request.View                          = view;
+            request.RequestedMaxReferencesPerNode = requestedMaxReferencesPerNode;
+            request.NodesToBrowse                 = nodesToBrowse;
+
+            UpdateRequestHeader(request, requestHeader == null, "Browse");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (BrowseResponse)genericResponse;
+                }
+                else
+                {
+                    BrowseResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginBrowse, InnerChannel.EndBrowse, new BrowseMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.BrowseResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.BrowseResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Browse");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the Browse service.
@@ -1371,6 +1897,63 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the BrowseNext service using async Task based request.
+        /// </summary>
+        public virtual async Task<BrowseNextResponse> BrowseNextAsync(
+            RequestHeader        requestHeader,
+            bool                 releaseContinuationPoints,
+            ByteStringCollection continuationPoints,
+            CancellationToken    cancellationToken)
+        {
+            BrowseNextRequest request = new BrowseNextRequest();
+            BrowseNextResponse response = null;
+
+            request.RequestHeader             = requestHeader;
+            request.ReleaseContinuationPoints = releaseContinuationPoints;
+            request.ContinuationPoints        = continuationPoints;
+
+            UpdateRequestHeader(request, requestHeader == null, "BrowseNext");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (BrowseNextResponse)genericResponse;
+                }
+                else
+                {
+                    BrowseNextResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginBrowseNext, InnerChannel.EndBrowseNext, new BrowseNextMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.BrowseNextResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.BrowseNextResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "BrowseNext");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the BrowseNext service.
         /// </summary>
@@ -1504,6 +2087,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the TranslateBrowsePathsToNodeIds service using async Task based request.
+        /// </summary>
+        public virtual async Task<TranslateBrowsePathsToNodeIdsResponse> TranslateBrowsePathsToNodeIdsAsync(
+            RequestHeader        requestHeader,
+            BrowsePathCollection browsePaths,
+            CancellationToken    cancellationToken)
+        {
+            TranslateBrowsePathsToNodeIdsRequest request = new TranslateBrowsePathsToNodeIdsRequest();
+            TranslateBrowsePathsToNodeIdsResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.BrowsePaths   = browsePaths;
+
+            UpdateRequestHeader(request, requestHeader == null, "TranslateBrowsePathsToNodeIds");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (TranslateBrowsePathsToNodeIdsResponse)genericResponse;
+                }
+                else
+                {
+                    TranslateBrowsePathsToNodeIdsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginTranslateBrowsePathsToNodeIds, InnerChannel.EndTranslateBrowsePathsToNodeIds, new TranslateBrowsePathsToNodeIdsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.TranslateBrowsePathsToNodeIdsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.TranslateBrowsePathsToNodeIdsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "TranslateBrowsePathsToNodeIds");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the TranslateBrowsePathsToNodeIds service.
         /// </summary>
@@ -1633,6 +2271,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the RegisterNodes service using async Task based request.
+        /// </summary>
+        public virtual async Task<RegisterNodesResponse> RegisterNodesAsync(
+            RequestHeader     requestHeader,
+            NodeIdCollection  nodesToRegister,
+            CancellationToken cancellationToken)
+        {
+            RegisterNodesRequest request = new RegisterNodesRequest();
+            RegisterNodesResponse response = null;
+
+            request.RequestHeader   = requestHeader;
+            request.NodesToRegister = nodesToRegister;
+
+            UpdateRequestHeader(request, requestHeader == null, "RegisterNodes");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (RegisterNodesResponse)genericResponse;
+                }
+                else
+                {
+                    RegisterNodesResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginRegisterNodes, InnerChannel.EndRegisterNodes, new RegisterNodesMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.RegisterNodesResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.RegisterNodesResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "RegisterNodes");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the RegisterNodes service.
         /// </summary>
@@ -1757,6 +2450,61 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the UnregisterNodes service using async Task based request.
+        /// </summary>
+        public virtual async Task<UnregisterNodesResponse> UnregisterNodesAsync(
+            RequestHeader     requestHeader,
+            NodeIdCollection  nodesToUnregister,
+            CancellationToken cancellationToken)
+        {
+            UnregisterNodesRequest request = new UnregisterNodesRequest();
+            UnregisterNodesResponse response = null;
+
+            request.RequestHeader     = requestHeader;
+            request.NodesToUnregister = nodesToUnregister;
+
+            UpdateRequestHeader(request, requestHeader == null, "UnregisterNodes");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (UnregisterNodesResponse)genericResponse;
+                }
+                else
+                {
+                    UnregisterNodesResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginUnregisterNodes, InnerChannel.EndUnregisterNodes, new UnregisterNodesMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.UnregisterNodesResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.UnregisterNodesResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "UnregisterNodes");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the UnregisterNodes service.
@@ -1898,6 +2646,69 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the QueryFirst service using async Task based request.
+        /// </summary>
+        public virtual async Task<QueryFirstResponse> QueryFirstAsync(
+            RequestHeader                 requestHeader,
+            ViewDescription               view,
+            NodeTypeDescriptionCollection nodeTypes,
+            ContentFilter                 filter,
+            uint                          maxDataSetsToReturn,
+            uint                          maxReferencesToReturn,
+            CancellationToken             cancellationToken)
+        {
+            QueryFirstRequest request = new QueryFirstRequest();
+            QueryFirstResponse response = null;
+
+            request.RequestHeader         = requestHeader;
+            request.View                  = view;
+            request.NodeTypes             = nodeTypes;
+            request.Filter                = filter;
+            request.MaxDataSetsToReturn   = maxDataSetsToReturn;
+            request.MaxReferencesToReturn = maxReferencesToReturn;
+
+            UpdateRequestHeader(request, requestHeader == null, "QueryFirst");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (QueryFirstResponse)genericResponse;
+                }
+                else
+                {
+                    QueryFirstResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginQueryFirst, InnerChannel.EndQueryFirst, new QueryFirstMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.QueryFirstResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.QueryFirstResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "QueryFirst");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the QueryFirst service.
@@ -2046,6 +2857,63 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the QueryNext service using async Task based request.
+        /// </summary>
+        public virtual async Task<QueryNextResponse> QueryNextAsync(
+            RequestHeader     requestHeader,
+            bool              releaseContinuationPoint,
+            byte[]            continuationPoint,
+            CancellationToken cancellationToken)
+        {
+            QueryNextRequest request = new QueryNextRequest();
+            QueryNextResponse response = null;
+
+            request.RequestHeader            = requestHeader;
+            request.ReleaseContinuationPoint = releaseContinuationPoint;
+            request.ContinuationPoint        = continuationPoint;
+
+            UpdateRequestHeader(request, requestHeader == null, "QueryNext");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (QueryNextResponse)genericResponse;
+                }
+                else
+                {
+                    QueryNextResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginQueryNext, InnerChannel.EndQueryNext, new QueryNextMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.QueryNextResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.QueryNextResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "QueryNext");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the QueryNext service.
         /// </summary>
@@ -2182,6 +3050,65 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Read service using async Task based request.
+        /// </summary>
+        public virtual async Task<ReadResponse> ReadAsync(
+            RequestHeader         requestHeader,
+            double                maxAge,
+            TimestampsToReturn    timestampsToReturn,
+            ReadValueIdCollection nodesToRead,
+            CancellationToken     cancellationToken)
+        {
+            ReadRequest request = new ReadRequest();
+            ReadResponse response = null;
+
+            request.RequestHeader      = requestHeader;
+            request.MaxAge             = maxAge;
+            request.TimestampsToReturn = timestampsToReturn;
+            request.NodesToRead        = nodesToRead;
+
+            UpdateRequestHeader(request, requestHeader == null, "Read");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (ReadResponse)genericResponse;
+                }
+                else
+                {
+                    ReadResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginRead, InnerChannel.EndRead, new ReadMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.ReadResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.ReadResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Read");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the Read service.
@@ -2324,6 +3251,67 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the HistoryRead service using async Task based request.
+        /// </summary>
+        public virtual async Task<HistoryReadResponse> HistoryReadAsync(
+            RequestHeader                requestHeader,
+            ExtensionObject              historyReadDetails,
+            TimestampsToReturn           timestampsToReturn,
+            bool                         releaseContinuationPoints,
+            HistoryReadValueIdCollection nodesToRead,
+            CancellationToken            cancellationToken)
+        {
+            HistoryReadRequest request = new HistoryReadRequest();
+            HistoryReadResponse response = null;
+
+            request.RequestHeader             = requestHeader;
+            request.HistoryReadDetails        = historyReadDetails;
+            request.TimestampsToReturn        = timestampsToReturn;
+            request.ReleaseContinuationPoints = releaseContinuationPoints;
+            request.NodesToRead               = nodesToRead;
+
+            UpdateRequestHeader(request, requestHeader == null, "HistoryRead");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (HistoryReadResponse)genericResponse;
+                }
+                else
+                {
+                    HistoryReadResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginHistoryRead, InnerChannel.EndHistoryRead, new HistoryReadMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.HistoryReadResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.HistoryReadResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "HistoryRead");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the HistoryRead service.
         /// </summary>
@@ -2461,6 +3449,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Write service using async Task based request.
+        /// </summary>
+        public virtual async Task<WriteResponse> WriteAsync(
+            RequestHeader        requestHeader,
+            WriteValueCollection nodesToWrite,
+            CancellationToken    cancellationToken)
+        {
+            WriteRequest request = new WriteRequest();
+            WriteResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.NodesToWrite  = nodesToWrite;
+
+            UpdateRequestHeader(request, requestHeader == null, "Write");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (WriteResponse)genericResponse;
+                }
+                else
+                {
+                    WriteResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginWrite, InnerChannel.EndWrite, new WriteMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.WriteResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.WriteResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Write");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the Write service.
         /// </summary>
@@ -2592,6 +3635,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the HistoryUpdate service using async Task based request.
+        /// </summary>
+        public virtual async Task<HistoryUpdateResponse> HistoryUpdateAsync(
+            RequestHeader             requestHeader,
+            ExtensionObjectCollection historyUpdateDetails,
+            CancellationToken         cancellationToken)
+        {
+            HistoryUpdateRequest request = new HistoryUpdateRequest();
+            HistoryUpdateResponse response = null;
+
+            request.RequestHeader        = requestHeader;
+            request.HistoryUpdateDetails = historyUpdateDetails;
+
+            UpdateRequestHeader(request, requestHeader == null, "HistoryUpdate");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (HistoryUpdateResponse)genericResponse;
+                }
+                else
+                {
+                    HistoryUpdateResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginHistoryUpdate, InnerChannel.EndHistoryUpdate, new HistoryUpdateMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.HistoryUpdateResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.HistoryUpdateResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "HistoryUpdate");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the HistoryUpdate service.
         /// </summary>
@@ -2722,6 +3820,61 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Call service using async Task based request.
+        /// </summary>
+        public virtual async Task<CallResponse> CallAsync(
+            RequestHeader               requestHeader,
+            CallMethodRequestCollection methodsToCall,
+            CancellationToken           cancellationToken)
+        {
+            CallRequest request = new CallRequest();
+            CallResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.MethodsToCall = methodsToCall;
+
+            UpdateRequestHeader(request, requestHeader == null, "Call");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (CallResponse)genericResponse;
+                }
+                else
+                {
+                    CallResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginCall, InnerChannel.EndCall, new CallMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.CallResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.CallResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Call");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the Call service.
@@ -2857,6 +4010,65 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the CreateMonitoredItems service using async Task based request.
+        /// </summary>
+        public virtual async Task<CreateMonitoredItemsResponse> CreateMonitoredItemsAsync(
+            RequestHeader                        requestHeader,
+            uint                                 subscriptionId,
+            TimestampsToReturn                   timestampsToReturn,
+            MonitoredItemCreateRequestCollection itemsToCreate,
+            CancellationToken                    cancellationToken)
+        {
+            CreateMonitoredItemsRequest request = new CreateMonitoredItemsRequest();
+            CreateMonitoredItemsResponse response = null;
+
+            request.RequestHeader      = requestHeader;
+            request.SubscriptionId     = subscriptionId;
+            request.TimestampsToReturn = timestampsToReturn;
+            request.ItemsToCreate      = itemsToCreate;
+
+            UpdateRequestHeader(request, requestHeader == null, "CreateMonitoredItems");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (CreateMonitoredItemsResponse)genericResponse;
+                }
+                else
+                {
+                    CreateMonitoredItemsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginCreateMonitoredItems, InnerChannel.EndCreateMonitoredItems, new CreateMonitoredItemsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.CreateMonitoredItemsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.CreateMonitoredItemsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "CreateMonitoredItems");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the CreateMonitoredItems service.
@@ -2997,6 +4209,65 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the ModifyMonitoredItems service using async Task based request.
+        /// </summary>
+        public virtual async Task<ModifyMonitoredItemsResponse> ModifyMonitoredItemsAsync(
+            RequestHeader                        requestHeader,
+            uint                                 subscriptionId,
+            TimestampsToReturn                   timestampsToReturn,
+            MonitoredItemModifyRequestCollection itemsToModify,
+            CancellationToken                    cancellationToken)
+        {
+            ModifyMonitoredItemsRequest request = new ModifyMonitoredItemsRequest();
+            ModifyMonitoredItemsResponse response = null;
+
+            request.RequestHeader      = requestHeader;
+            request.SubscriptionId     = subscriptionId;
+            request.TimestampsToReturn = timestampsToReturn;
+            request.ItemsToModify      = itemsToModify;
+
+            UpdateRequestHeader(request, requestHeader == null, "ModifyMonitoredItems");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (ModifyMonitoredItemsResponse)genericResponse;
+                }
+                else
+                {
+                    ModifyMonitoredItemsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginModifyMonitoredItems, InnerChannel.EndModifyMonitoredItems, new ModifyMonitoredItemsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.ModifyMonitoredItemsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.ModifyMonitoredItemsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "ModifyMonitoredItems");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the ModifyMonitoredItems service.
         /// </summary>
@@ -3135,6 +4406,65 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the SetMonitoringMode service using async Task based request.
+        /// </summary>
+        public virtual async Task<SetMonitoringModeResponse> SetMonitoringModeAsync(
+            RequestHeader     requestHeader,
+            uint              subscriptionId,
+            MonitoringMode    monitoringMode,
+            UInt32Collection  monitoredItemIds,
+            CancellationToken cancellationToken)
+        {
+            SetMonitoringModeRequest request = new SetMonitoringModeRequest();
+            SetMonitoringModeResponse response = null;
+
+            request.RequestHeader    = requestHeader;
+            request.SubscriptionId   = subscriptionId;
+            request.MonitoringMode   = monitoringMode;
+            request.MonitoredItemIds = monitoredItemIds;
+
+            UpdateRequestHeader(request, requestHeader == null, "SetMonitoringMode");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (SetMonitoringModeResponse)genericResponse;
+                }
+                else
+                {
+                    SetMonitoringModeResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginSetMonitoringMode, InnerChannel.EndSetMonitoringMode, new SetMonitoringModeMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.SetMonitoringModeResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.SetMonitoringModeResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "SetMonitoringMode");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the SetMonitoringMode service.
@@ -3281,6 +4611,67 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the SetTriggering service using async Task based request.
+        /// </summary>
+        public virtual async Task<SetTriggeringResponse> SetTriggeringAsync(
+            RequestHeader     requestHeader,
+            uint              subscriptionId,
+            uint              triggeringItemId,
+            UInt32Collection  linksToAdd,
+            UInt32Collection  linksToRemove,
+            CancellationToken cancellationToken)
+        {
+            SetTriggeringRequest request = new SetTriggeringRequest();
+            SetTriggeringResponse response = null;
+
+            request.RequestHeader    = requestHeader;
+            request.SubscriptionId   = subscriptionId;
+            request.TriggeringItemId = triggeringItemId;
+            request.LinksToAdd       = linksToAdd;
+            request.LinksToRemove    = linksToRemove;
+
+            UpdateRequestHeader(request, requestHeader == null, "SetTriggering");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (SetTriggeringResponse)genericResponse;
+                }
+                else
+                {
+                    SetTriggeringResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginSetTriggering, InnerChannel.EndSetTriggering, new SetTriggeringMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.SetTriggeringResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.SetTriggeringResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "SetTriggering");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the SetTriggering service.
         /// </summary>
@@ -3423,6 +4814,63 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the DeleteMonitoredItems service using async Task based request.
+        /// </summary>
+        public virtual async Task<DeleteMonitoredItemsResponse> DeleteMonitoredItemsAsync(
+            RequestHeader     requestHeader,
+            uint              subscriptionId,
+            UInt32Collection  monitoredItemIds,
+            CancellationToken cancellationToken)
+        {
+            DeleteMonitoredItemsRequest request = new DeleteMonitoredItemsRequest();
+            DeleteMonitoredItemsResponse response = null;
+
+            request.RequestHeader    = requestHeader;
+            request.SubscriptionId   = subscriptionId;
+            request.MonitoredItemIds = monitoredItemIds;
+
+            UpdateRequestHeader(request, requestHeader == null, "DeleteMonitoredItems");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (DeleteMonitoredItemsResponse)genericResponse;
+                }
+                else
+                {
+                    DeleteMonitoredItemsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginDeleteMonitoredItems, InnerChannel.EndDeleteMonitoredItems, new DeleteMonitoredItemsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.DeleteMonitoredItemsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.DeleteMonitoredItemsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "DeleteMonitoredItems");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the DeleteMonitoredItems service.
@@ -3570,6 +5018,71 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the CreateSubscription service using async Task based request.
+        /// </summary>
+        public virtual async Task<CreateSubscriptionResponse> CreateSubscriptionAsync(
+            RequestHeader     requestHeader,
+            double            requestedPublishingInterval,
+            uint              requestedLifetimeCount,
+            uint              requestedMaxKeepAliveCount,
+            uint              maxNotificationsPerPublish,
+            bool              publishingEnabled,
+            byte              priority,
+            CancellationToken cancellationToken)
+        {
+            CreateSubscriptionRequest request = new CreateSubscriptionRequest();
+            CreateSubscriptionResponse response = null;
+
+            request.RequestHeader               = requestHeader;
+            request.RequestedPublishingInterval = requestedPublishingInterval;
+            request.RequestedLifetimeCount      = requestedLifetimeCount;
+            request.RequestedMaxKeepAliveCount  = requestedMaxKeepAliveCount;
+            request.MaxNotificationsPerPublish  = maxNotificationsPerPublish;
+            request.PublishingEnabled           = publishingEnabled;
+            request.Priority                    = priority;
+
+            UpdateRequestHeader(request, requestHeader == null, "CreateSubscription");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (CreateSubscriptionResponse)genericResponse;
+                }
+                else
+                {
+                    CreateSubscriptionResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginCreateSubscription, InnerChannel.EndCreateSubscription, new CreateSubscriptionMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.CreateSubscriptionResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.CreateSubscriptionResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "CreateSubscription");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the CreateSubscription service.
@@ -3728,6 +5241,71 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the ModifySubscription service using async Task based request.
+        /// </summary>
+        public virtual async Task<ModifySubscriptionResponse> ModifySubscriptionAsync(
+            RequestHeader     requestHeader,
+            uint              subscriptionId,
+            double            requestedPublishingInterval,
+            uint              requestedLifetimeCount,
+            uint              requestedMaxKeepAliveCount,
+            uint              maxNotificationsPerPublish,
+            byte              priority,
+            CancellationToken cancellationToken)
+        {
+            ModifySubscriptionRequest request = new ModifySubscriptionRequest();
+            ModifySubscriptionResponse response = null;
+
+            request.RequestHeader               = requestHeader;
+            request.SubscriptionId              = subscriptionId;
+            request.RequestedPublishingInterval = requestedPublishingInterval;
+            request.RequestedLifetimeCount      = requestedLifetimeCount;
+            request.RequestedMaxKeepAliveCount  = requestedMaxKeepAliveCount;
+            request.MaxNotificationsPerPublish  = maxNotificationsPerPublish;
+            request.Priority                    = priority;
+
+            UpdateRequestHeader(request, requestHeader == null, "ModifySubscription");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (ModifySubscriptionResponse)genericResponse;
+                }
+                else
+                {
+                    ModifySubscriptionResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginModifySubscription, InnerChannel.EndModifySubscription, new ModifySubscriptionMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.ModifySubscriptionResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.ModifySubscriptionResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "ModifySubscription");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the ModifySubscription service.
         /// </summary>
@@ -3873,6 +5451,63 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the SetPublishingMode service using async Task based request.
+        /// </summary>
+        public virtual async Task<SetPublishingModeResponse> SetPublishingModeAsync(
+            RequestHeader     requestHeader,
+            bool              publishingEnabled,
+            UInt32Collection  subscriptionIds,
+            CancellationToken cancellationToken)
+        {
+            SetPublishingModeRequest request = new SetPublishingModeRequest();
+            SetPublishingModeResponse response = null;
+
+            request.RequestHeader     = requestHeader;
+            request.PublishingEnabled = publishingEnabled;
+            request.SubscriptionIds   = subscriptionIds;
+
+            UpdateRequestHeader(request, requestHeader == null, "SetPublishingMode");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (SetPublishingModeResponse)genericResponse;
+                }
+                else
+                {
+                    SetPublishingModeResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginSetPublishingMode, InnerChannel.EndSetPublishingMode, new SetPublishingModeMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.SetPublishingModeResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.SetPublishingModeResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "SetPublishingMode");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the SetPublishingMode service.
         /// </summary>
@@ -4014,6 +5649,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Publish service using async Task based request.
+        /// </summary>
+        public virtual async Task<PublishResponse> PublishAsync(
+            RequestHeader                         requestHeader,
+            SubscriptionAcknowledgementCollection subscriptionAcknowledgements,
+            CancellationToken                     cancellationToken)
+        {
+            PublishRequest request = new PublishRequest();
+            PublishResponse response = null;
+
+            request.RequestHeader                = requestHeader;
+            request.SubscriptionAcknowledgements = subscriptionAcknowledgements;
+
+            UpdateRequestHeader(request, requestHeader == null, "Publish");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (PublishResponse)genericResponse;
+                }
+                else
+                {
+                    PublishResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginPublish, InnerChannel.EndPublish, new PublishMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.PublishResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.PublishResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Publish");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the Publish service.
         /// </summary>
@@ -4153,6 +5843,63 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the Republish service using async Task based request.
+        /// </summary>
+        public virtual async Task<RepublishResponse> RepublishAsync(
+            RequestHeader     requestHeader,
+            uint              subscriptionId,
+            uint              retransmitSequenceNumber,
+            CancellationToken cancellationToken)
+        {
+            RepublishRequest request = new RepublishRequest();
+            RepublishResponse response = null;
+
+            request.RequestHeader            = requestHeader;
+            request.SubscriptionId           = subscriptionId;
+            request.RetransmitSequenceNumber = retransmitSequenceNumber;
+
+            UpdateRequestHeader(request, requestHeader == null, "Republish");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (RepublishResponse)genericResponse;
+                }
+                else
+                {
+                    RepublishResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginRepublish, InnerChannel.EndRepublish, new RepublishMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.RepublishResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.RepublishResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "Republish");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the Republish service.
         /// </summary>
@@ -4286,6 +6033,63 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the TransferSubscriptions service using async Task based request.
+        /// </summary>
+        public virtual async Task<TransferSubscriptionsResponse> TransferSubscriptionsAsync(
+            RequestHeader     requestHeader,
+            UInt32Collection  subscriptionIds,
+            bool              sendInitialValues,
+            CancellationToken cancellationToken)
+        {
+            TransferSubscriptionsRequest request = new TransferSubscriptionsRequest();
+            TransferSubscriptionsResponse response = null;
+
+            request.RequestHeader     = requestHeader;
+            request.SubscriptionIds   = subscriptionIds;
+            request.SendInitialValues = sendInitialValues;
+
+            UpdateRequestHeader(request, requestHeader == null, "TransferSubscriptions");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (TransferSubscriptionsResponse)genericResponse;
+                }
+                else
+                {
+                    TransferSubscriptionsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginTransferSubscriptions, InnerChannel.EndTransferSubscriptions, new TransferSubscriptionsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.TransferSubscriptionsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.TransferSubscriptionsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "TransferSubscriptions");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the TransferSubscriptions service.
         /// </summary>
@@ -4418,6 +6222,61 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the DeleteSubscriptions service using async Task based request.
+        /// </summary>
+        public virtual async Task<DeleteSubscriptionsResponse> DeleteSubscriptionsAsync(
+            RequestHeader     requestHeader,
+            UInt32Collection  subscriptionIds,
+            CancellationToken cancellationToken)
+        {
+            DeleteSubscriptionsRequest request = new DeleteSubscriptionsRequest();
+            DeleteSubscriptionsResponse response = null;
+
+            request.RequestHeader   = requestHeader;
+            request.SubscriptionIds = subscriptionIds;
+
+            UpdateRequestHeader(request, requestHeader == null, "DeleteSubscriptions");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (DeleteSubscriptionsResponse)genericResponse;
+                }
+                else
+                {
+                    DeleteSubscriptionsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginDeleteSubscriptions, InnerChannel.EndDeleteSubscriptions, new DeleteSubscriptionsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.DeleteSubscriptionsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.DeleteSubscriptionsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "DeleteSubscriptions");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the DeleteSubscriptions service.
@@ -4583,6 +6442,65 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the FindServers service using async Task based request.
+        /// </summary>
+        public virtual async Task<FindServersResponse> FindServersAsync(
+            RequestHeader     requestHeader,
+            string            endpointUrl,
+            StringCollection  localeIds,
+            StringCollection  serverUris,
+            CancellationToken cancellationToken)
+        {
+            FindServersRequest request = new FindServersRequest();
+            FindServersResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.EndpointUrl   = endpointUrl;
+            request.LocaleIds     = localeIds;
+            request.ServerUris    = serverUris;
+
+            UpdateRequestHeader(request, requestHeader == null, "FindServers");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (FindServersResponse)genericResponse;
+                }
+                else
+                {
+                    FindServersResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginFindServers, InnerChannel.EndFindServers, new FindServersMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.FindServersResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.FindServersResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "FindServers");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the FindServers service.
         /// </summary>
@@ -4720,6 +6638,65 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the FindServersOnNetwork service using async Task based request.
+        /// </summary>
+        public virtual async Task<FindServersOnNetworkResponse> FindServersOnNetworkAsync(
+            RequestHeader     requestHeader,
+            uint              startingRecordId,
+            uint              maxRecordsToReturn,
+            StringCollection  serverCapabilityFilter,
+            CancellationToken cancellationToken)
+        {
+            FindServersOnNetworkRequest request = new FindServersOnNetworkRequest();
+            FindServersOnNetworkResponse response = null;
+
+            request.RequestHeader          = requestHeader;
+            request.StartingRecordId       = startingRecordId;
+            request.MaxRecordsToReturn     = maxRecordsToReturn;
+            request.ServerCapabilityFilter = serverCapabilityFilter;
+
+            UpdateRequestHeader(request, requestHeader == null, "FindServersOnNetwork");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (FindServersOnNetworkResponse)genericResponse;
+                }
+                else
+                {
+                    FindServersOnNetworkResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginFindServersOnNetwork, InnerChannel.EndFindServersOnNetwork, new FindServersOnNetworkMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.FindServersOnNetworkResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.FindServersOnNetworkResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "FindServersOnNetwork");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the FindServersOnNetwork service.
         /// </summary>
@@ -4856,6 +6833,65 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the GetEndpoints service using async Task based request.
+        /// </summary>
+        public virtual async Task<GetEndpointsResponse> GetEndpointsAsync(
+            RequestHeader     requestHeader,
+            string            endpointUrl,
+            StringCollection  localeIds,
+            StringCollection  profileUris,
+            CancellationToken cancellationToken)
+        {
+            GetEndpointsRequest request = new GetEndpointsRequest();
+            GetEndpointsResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.EndpointUrl   = endpointUrl;
+            request.LocaleIds     = localeIds;
+            request.ProfileUris   = profileUris;
+
+            UpdateRequestHeader(request, requestHeader == null, "GetEndpoints");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (GetEndpointsResponse)genericResponse;
+                }
+                else
+                {
+                    GetEndpointsResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginGetEndpoints, InnerChannel.EndGetEndpoints, new GetEndpointsMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.GetEndpointsResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.GetEndpointsResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "GetEndpoints");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the GetEndpoints service.
@@ -5017,6 +7053,61 @@ namespace Opc.Ua
             return response.ResponseHeader;
         }
 
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the RegisterServer service using async Task based request.
+        /// </summary>
+        public virtual async Task<RegisterServerResponse> RegisterServerAsync(
+            RequestHeader     requestHeader,
+            RegisteredServer  server,
+            CancellationToken cancellationToken)
+        {
+            RegisterServerRequest request = new RegisterServerRequest();
+            RegisterServerResponse response = null;
+
+            request.RequestHeader = requestHeader;
+            request.Server        = server;
+
+            UpdateRequestHeader(request, requestHeader == null, "RegisterServer");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (RegisterServerResponse)genericResponse;
+                }
+                else
+                {
+                    RegisterServerResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginRegisterServer, InnerChannel.EndRegisterServer, new RegisterServerMessage(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.RegisterServerResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.RegisterServerResponse;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "RegisterServer");
+            }
+
+            return response;
+        }
+        #endif
+
         /// <summary>
         /// Begins an asynchronous invocation of the RegisterServer service.
         /// </summary>
@@ -5145,6 +7236,63 @@ namespace Opc.Ua
 
             return response.ResponseHeader;
         }
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// Invokes the RegisterServer2 service using async Task based request.
+        /// </summary>
+        public virtual async Task<RegisterServer2Response> RegisterServer2Async(
+            RequestHeader             requestHeader,
+            RegisteredServer          server,
+            ExtensionObjectCollection discoveryConfiguration,
+            CancellationToken         cancellationToken)
+        {
+            RegisterServer2Request request = new RegisterServer2Request();
+            RegisterServer2Response response = null;
+
+            request.RequestHeader          = requestHeader;
+            request.Server                 = server;
+            request.DiscoveryConfiguration = discoveryConfiguration;
+
+            UpdateRequestHeader(request, requestHeader == null, "RegisterServer2");
+
+            try
+            {
+                if (UseTransportChannel)
+                {
+                    IServiceResponse genericResponse = await TransportChannel.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+                    if (genericResponse == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    ValidateResponse(genericResponse.ResponseHeader);
+                    response = (RegisterServer2Response)genericResponse;
+                }
+                else
+                {
+                    RegisterServer2ResponseMessage responseMessage = await Task.Factory.FromAsync(
+                        InnerChannel.BeginRegisterServer2, InnerChannel.EndRegisterServer2, new RegisterServer2Message(request), 
+                        null, TaskCreationOptions.None).ConfigureAwait(false);
+
+                    if (responseMessage == null || responseMessage.RegisterServer2Response == null)
+                    {
+                        throw new ServiceResultException(StatusCodes.BadUnknownResponse);
+                    }
+
+                    response = responseMessage.RegisterServer2Response;
+                    ValidateResponse(response.ResponseHeader);
+                }
+            }
+            finally
+            {
+                RequestCompleted(request, response, "RegisterServer2");
+            }
+
+            return response;
+        }
+        #endif
 
         /// <summary>
         /// Begins an asynchronous invocation of the RegisterServer2 service.

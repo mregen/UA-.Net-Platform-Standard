@@ -29,6 +29,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Opc.Ua.Client
 {
@@ -138,6 +139,31 @@ namespace Opc.Ua.Client
             using (var client = DiscoveryClient.Create(url, endpointConfiguration))
             {
                 var endpoints = client.GetEndpoints(null);
+                return SelectEndpoint(url, endpoints, useSecurity);
+            }
+        }
+
+        /// <summary>
+        /// Finds the endpoint that best matches the current settings.
+        /// </summary>
+        /// <param name="discoveryUrl">The discovery URL.</param>
+        /// <param name="useSecurity">if set to <c>true</c> select an endpoint that uses security.</param>
+        /// <param name="discoverTimeout">Operation timeout in milliseconds.</param>
+        /// <returns>The best available endpoint.</returns>
+        public static async Task<EndpointDescription> SelectEndpointAsync(
+            string discoveryUrl,
+            bool useSecurity,
+            int discoverTimeout
+            )
+        {
+            var url = GetDiscoveryUrl(discoveryUrl);
+            var endpointConfiguration = EndpointConfiguration.Create();
+            endpointConfiguration.OperationTimeout = discoverTimeout;
+
+            // Connect to the server's discovery endpoint and find the available configuration.
+            using (var client = DiscoveryClient.Create(url, endpointConfiguration))
+            {
+                var endpoints = await client.GetEndpointsAsync(null).ConfigureAwait(false);
                 return SelectEndpoint(url, endpoints, useSecurity);
             }
         }

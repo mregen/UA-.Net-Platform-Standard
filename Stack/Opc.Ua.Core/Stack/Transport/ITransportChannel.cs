@@ -13,6 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Opc.Ua.Bindings;
 
 namespace Opc.Ua
@@ -165,6 +167,15 @@ namespace Opc.Ua
         /// <returns>The response returned by the server.</returns>
         /// <exception cref="ServiceResultException">Thrown if any communication error occurs.</exception>
         IServiceResponse SendRequest(IServiceRequest request);
+
+        /// <summary>
+        /// Sends a request over the secure channel.
+        /// </summary>
+        /// <param name="request">The request to send.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>The response returned by the server.</returns>
+        /// <exception cref="ServiceResultException">Thrown if any communication error occurs.</exception>
+        Task<IServiceResponse> SendRequestAsync(IServiceRequest request, CancellationToken ct);
 
         /// <summary>
         /// Begins an asynchronous operation to send a request over the secure channel.

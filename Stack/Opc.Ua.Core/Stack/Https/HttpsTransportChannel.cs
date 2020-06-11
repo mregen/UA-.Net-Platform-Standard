@@ -15,10 +15,11 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Opc.Ua.Bindings
 {
@@ -32,30 +33,15 @@ namespace Opc.Ua.Bindings
         {
         }
 
-        public TransportChannelFeatures SupportedFeatures
-        {
-            get { return TransportChannelFeatures.Open | TransportChannelFeatures.Reconnect | TransportChannelFeatures.BeginSendRequest; }
-        }
+        public TransportChannelFeatures SupportedFeatures => TransportChannelFeatures.Open | TransportChannelFeatures.Reconnect | TransportChannelFeatures.BeginSendRequest;
 
-        public EndpointDescription EndpointDescription
-        {
-            get { return m_settings.Description; }
-        }
+        public EndpointDescription EndpointDescription => m_settings.Description;
 
-        public EndpointConfiguration EndpointConfiguration
-        {
-            get { return m_settings.Configuration; }
-        }
+        public EndpointConfiguration EndpointConfiguration => m_settings.Configuration;
 
-        public ServiceMessageContext MessageContext
-        {
-            get { return m_quotas.MessageContext; }
-        }
+        public ServiceMessageContext MessageContext => m_quotas.MessageContext;
 
-        public ChannelToken CurrentToken
-        {
-            get { return null; }
-        }
+        public ChannelToken CurrentToken => null;
 
         public int OperationTimeout
         {
@@ -177,22 +163,21 @@ namespace Opc.Ua.Bindings
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
                 AsyncResult result = new AsyncResult(callback, callbackData, m_operationTimeout, request, null);
-                Task.Run(async () =>
-               {
-                   try
-                   {
-                       response = await m_client.PostAsync(m_url, content);
-                       response.EnsureSuccessStatusCode();
-                   }
-                   catch (Exception ex)
-                   {
-                       Utils.Trace("Exception sending HTTPS request: " + ex.Message);
-                       result.Exception = ex;
-                       response = null;
-                   }
-                   result.Response = response;
-                   result.OperationCompleted();
-               });
+                Task.Run(async () => {
+                    try
+                    {
+                        response = await m_client.PostAsync(m_url, content);
+                        response.EnsureSuccessStatusCode();
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.Trace("Exception sending HTTPS request: " + ex.Message);
+                        result.Exception = ex;
+                        response = null;
+                    }
+                    result.Response = response;
+                    result.OperationCompleted();
+                });
 
                 return result;
             }
@@ -298,6 +283,11 @@ namespace Opc.Ua.Bindings
             m_quotas.MessageContext.Factory = m_settings.Factory;
 
             m_quotas.CertificateValidator = settings.CertificateValidator;
+        }
+
+        public Task<IServiceResponse> SendRequestAsync(IServiceRequest request, CancellationToken ct)
+        {
+            return Task.Factory.FromAsync<IServiceRequest, IServiceResponse>(BeginSendRequest, EndSendRequest, request, null);
         }
 
         private Uri m_url;

@@ -2,7 +2,7 @@
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,7 +11,7 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -28,10 +28,17 @@
  * ======================================================================*/
 
 using System;
+using System.ServiceModel;
+
+#if (!NET_STANDARD)
 using System.Collections.Generic;
 using System.Xml;
-using System.ServiceModel;
 using System.Runtime.Serialization;
+#endif
+
+#if (NET_STANDARD_ASYNC)
+using System.Threading.Tasks;
+#endif
 
 namespace Opc.Ua
 {
@@ -354,6 +361,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CreateSession service request.
         /// </summary>
         CreateSessionResponseMessage EndCreateSession(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CreateSession service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/CreateSession", ReplyAction = Namespaces.OpcUaWsdl + "/CreateSessionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CreateSessionFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<CreateSessionResponseMessage> CreateSessionAsync(CreateSessionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_ActivateSession)
@@ -368,6 +384,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a ActivateSession service request.
         /// </summary>
         ActivateSessionResponseMessage EndActivateSession(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the ActivateSession service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/ActivateSession", ReplyAction = Namespaces.OpcUaWsdl + "/ActivateSessionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ActivateSessionFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<ActivateSessionResponseMessage> ActivateSessionAsync(ActivateSessionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_CloseSession)
@@ -382,6 +407,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CloseSession service request.
         /// </summary>
         CloseSessionResponseMessage EndCloseSession(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CloseSession service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/CloseSession", ReplyAction = Namespaces.OpcUaWsdl + "/CloseSessionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CloseSessionFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<CloseSessionResponseMessage> CloseSessionAsync(CloseSessionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Cancel)
@@ -396,6 +430,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Cancel service request.
         /// </summary>
         CancelResponseMessage EndCancel(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Cancel service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Cancel", ReplyAction = Namespaces.OpcUaWsdl + "/CancelResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CancelFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<CancelResponseMessage> CancelAsync(CancelMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_AddNodes)
@@ -410,6 +453,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a AddNodes service request.
         /// </summary>
         AddNodesResponseMessage EndAddNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the AddNodes service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/AddNodes", ReplyAction = Namespaces.OpcUaWsdl + "/AddNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/AddNodesFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<AddNodesResponseMessage> AddNodesAsync(AddNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_AddReferences)
@@ -424,6 +476,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a AddReferences service request.
         /// </summary>
         AddReferencesResponseMessage EndAddReferences(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the AddReferences service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/AddReferences", ReplyAction = Namespaces.OpcUaWsdl + "/AddReferencesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/AddReferencesFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<AddReferencesResponseMessage> AddReferencesAsync(AddReferencesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteNodes)
@@ -438,6 +499,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteNodes service request.
         /// </summary>
         DeleteNodesResponseMessage EndDeleteNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteNodes service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/DeleteNodes", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteNodesFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<DeleteNodesResponseMessage> DeleteNodesAsync(DeleteNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteReferences)
@@ -452,6 +522,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteReferences service request.
         /// </summary>
         DeleteReferencesResponseMessage EndDeleteReferences(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteReferences service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/DeleteReferences", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteReferencesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteReferencesFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<DeleteReferencesResponseMessage> DeleteReferencesAsync(DeleteReferencesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Browse)
@@ -466,6 +545,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Browse service request.
         /// </summary>
         BrowseResponseMessage EndBrowse(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Browse service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Browse", ReplyAction = Namespaces.OpcUaWsdl + "/BrowseResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/BrowseFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<BrowseResponseMessage> BrowseAsync(BrowseMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_BrowseNext)
@@ -480,6 +568,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a BrowseNext service request.
         /// </summary>
         BrowseNextResponseMessage EndBrowseNext(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the BrowseNext service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/BrowseNext", ReplyAction = Namespaces.OpcUaWsdl + "/BrowseNextResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/BrowseNextFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<BrowseNextResponseMessage> BrowseNextAsync(BrowseNextMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_TranslateBrowsePathsToNodeIds)
@@ -494,6 +591,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a TranslateBrowsePathsToNodeIds service request.
         /// </summary>
         TranslateBrowsePathsToNodeIdsResponseMessage EndTranslateBrowsePathsToNodeIds(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the TranslateBrowsePathsToNodeIds service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/TranslateBrowsePathsToNodeIds", ReplyAction = Namespaces.OpcUaWsdl + "/TranslateBrowsePathsToNodeIdsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/TranslateBrowsePathsToNodeIdsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<TranslateBrowsePathsToNodeIdsResponseMessage> TranslateBrowsePathsToNodeIdsAsync(TranslateBrowsePathsToNodeIdsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_RegisterNodes)
@@ -508,6 +614,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a RegisterNodes service request.
         /// </summary>
         RegisterNodesResponseMessage EndRegisterNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the RegisterNodes service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/RegisterNodes", ReplyAction = Namespaces.OpcUaWsdl + "/RegisterNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RegisterNodesFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<RegisterNodesResponseMessage> RegisterNodesAsync(RegisterNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_UnregisterNodes)
@@ -522,6 +637,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a UnregisterNodes service request.
         /// </summary>
         UnregisterNodesResponseMessage EndUnregisterNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the UnregisterNodes service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/UnregisterNodes", ReplyAction = Namespaces.OpcUaWsdl + "/UnregisterNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/UnregisterNodesFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<UnregisterNodesResponseMessage> UnregisterNodesAsync(UnregisterNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_QueryFirst)
@@ -536,6 +660,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a QueryFirst service request.
         /// </summary>
         QueryFirstResponseMessage EndQueryFirst(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the QueryFirst service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/QueryFirst", ReplyAction = Namespaces.OpcUaWsdl + "/QueryFirstResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/QueryFirstFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<QueryFirstResponseMessage> QueryFirstAsync(QueryFirstMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_QueryNext)
@@ -550,6 +683,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a QueryNext service request.
         /// </summary>
         QueryNextResponseMessage EndQueryNext(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the QueryNext service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/QueryNext", ReplyAction = Namespaces.OpcUaWsdl + "/QueryNextResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/QueryNextFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<QueryNextResponseMessage> QueryNextAsync(QueryNextMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Read)
@@ -564,6 +706,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Read service request.
         /// </summary>
         ReadResponseMessage EndRead(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Read service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Read", ReplyAction = Namespaces.OpcUaWsdl + "/ReadResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ReadFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<ReadResponseMessage> ReadAsync(ReadMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_HistoryRead)
@@ -578,6 +729,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a HistoryRead service request.
         /// </summary>
         HistoryReadResponseMessage EndHistoryRead(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the HistoryRead service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/HistoryRead", ReplyAction = Namespaces.OpcUaWsdl + "/HistoryReadResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/HistoryReadFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<HistoryReadResponseMessage> HistoryReadAsync(HistoryReadMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Write)
@@ -592,6 +752,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Write service request.
         /// </summary>
         WriteResponseMessage EndWrite(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Write service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Write", ReplyAction = Namespaces.OpcUaWsdl + "/WriteResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/WriteFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<WriteResponseMessage> WriteAsync(WriteMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_HistoryUpdate)
@@ -606,6 +775,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a HistoryUpdate service request.
         /// </summary>
         HistoryUpdateResponseMessage EndHistoryUpdate(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the HistoryUpdate service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/HistoryUpdate", ReplyAction = Namespaces.OpcUaWsdl + "/HistoryUpdateResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/HistoryUpdateFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<HistoryUpdateResponseMessage> HistoryUpdateAsync(HistoryUpdateMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Call)
@@ -620,6 +798,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Call service request.
         /// </summary>
         CallResponseMessage EndCall(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Call service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Call", ReplyAction = Namespaces.OpcUaWsdl + "/CallResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CallFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<CallResponseMessage> CallAsync(CallMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_CreateMonitoredItems)
@@ -634,6 +821,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CreateMonitoredItems service request.
         /// </summary>
         CreateMonitoredItemsResponseMessage EndCreateMonitoredItems(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CreateMonitoredItems service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/CreateMonitoredItems", ReplyAction = Namespaces.OpcUaWsdl + "/CreateMonitoredItemsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CreateMonitoredItemsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<CreateMonitoredItemsResponseMessage> CreateMonitoredItemsAsync(CreateMonitoredItemsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_ModifyMonitoredItems)
@@ -648,6 +844,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a ModifyMonitoredItems service request.
         /// </summary>
         ModifyMonitoredItemsResponseMessage EndModifyMonitoredItems(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the ModifyMonitoredItems service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/ModifyMonitoredItems", ReplyAction = Namespaces.OpcUaWsdl + "/ModifyMonitoredItemsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ModifyMonitoredItemsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<ModifyMonitoredItemsResponseMessage> ModifyMonitoredItemsAsync(ModifyMonitoredItemsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_SetMonitoringMode)
@@ -662,6 +867,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a SetMonitoringMode service request.
         /// </summary>
         SetMonitoringModeResponseMessage EndSetMonitoringMode(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the SetMonitoringMode service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/SetMonitoringMode", ReplyAction = Namespaces.OpcUaWsdl + "/SetMonitoringModeResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/SetMonitoringModeFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<SetMonitoringModeResponseMessage> SetMonitoringModeAsync(SetMonitoringModeMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_SetTriggering)
@@ -676,6 +890,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a SetTriggering service request.
         /// </summary>
         SetTriggeringResponseMessage EndSetTriggering(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the SetTriggering service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/SetTriggering", ReplyAction = Namespaces.OpcUaWsdl + "/SetTriggeringResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/SetTriggeringFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<SetTriggeringResponseMessage> SetTriggeringAsync(SetTriggeringMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteMonitoredItems)
@@ -690,6 +913,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteMonitoredItems service request.
         /// </summary>
         DeleteMonitoredItemsResponseMessage EndDeleteMonitoredItems(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteMonitoredItems service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/DeleteMonitoredItems", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteMonitoredItemsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteMonitoredItemsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<DeleteMonitoredItemsResponseMessage> DeleteMonitoredItemsAsync(DeleteMonitoredItemsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_CreateSubscription)
@@ -704,6 +936,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CreateSubscription service request.
         /// </summary>
         CreateSubscriptionResponseMessage EndCreateSubscription(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CreateSubscription service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/CreateSubscription", ReplyAction = Namespaces.OpcUaWsdl + "/CreateSubscriptionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CreateSubscriptionFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<CreateSubscriptionResponseMessage> CreateSubscriptionAsync(CreateSubscriptionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_ModifySubscription)
@@ -718,6 +959,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a ModifySubscription service request.
         /// </summary>
         ModifySubscriptionResponseMessage EndModifySubscription(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the ModifySubscription service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/ModifySubscription", ReplyAction = Namespaces.OpcUaWsdl + "/ModifySubscriptionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ModifySubscriptionFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<ModifySubscriptionResponseMessage> ModifySubscriptionAsync(ModifySubscriptionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_SetPublishingMode)
@@ -732,6 +982,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a SetPublishingMode service request.
         /// </summary>
         SetPublishingModeResponseMessage EndSetPublishingMode(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the SetPublishingMode service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/SetPublishingMode", ReplyAction = Namespaces.OpcUaWsdl + "/SetPublishingModeResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/SetPublishingModeFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<SetPublishingModeResponseMessage> SetPublishingModeAsync(SetPublishingModeMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Publish)
@@ -746,6 +1005,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Publish service request.
         /// </summary>
         PublishResponseMessage EndPublish(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Publish service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Publish", ReplyAction = Namespaces.OpcUaWsdl + "/PublishResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/PublishFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<PublishResponseMessage> PublishAsync(PublishMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Republish)
@@ -760,6 +1028,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Republish service request.
         /// </summary>
         RepublishResponseMessage EndRepublish(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Republish service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/Republish", ReplyAction = Namespaces.OpcUaWsdl + "/RepublishResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RepublishFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<RepublishResponseMessage> RepublishAsync(RepublishMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_TransferSubscriptions)
@@ -774,6 +1051,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a TransferSubscriptions service request.
         /// </summary>
         TransferSubscriptionsResponseMessage EndTransferSubscriptions(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the TransferSubscriptions service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/TransferSubscriptions", ReplyAction = Namespaces.OpcUaWsdl + "/TransferSubscriptionsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/TransferSubscriptionsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<TransferSubscriptionsResponseMessage> TransferSubscriptionsAsync(TransferSubscriptionsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteSubscriptions)
@@ -788,6 +1074,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteSubscriptions service request.
         /// </summary>
         DeleteSubscriptionsResponseMessage EndDeleteSubscriptions(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteSubscriptions service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/DeleteSubscriptions", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteSubscriptionsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteSubscriptionsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<DeleteSubscriptionsResponseMessage> DeleteSubscriptionsAsync(DeleteSubscriptionsMessage request);
+        #endif
         #endif
     }
     #endif
@@ -820,6 +1115,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CreateSession service request.
         /// </summary>
         CreateSessionResponseMessage EndCreateSession(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CreateSession service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/CreateSession", ReplyAction = Namespaces.OpcUaWsdl + "/CreateSessionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CreateSessionFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<CreateSessionResponseMessage> CreateSessionAsync(CreateSessionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_ActivateSession)
@@ -840,6 +1144,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a ActivateSession service request.
         /// </summary>
         ActivateSessionResponseMessage EndActivateSession(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the ActivateSession service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/ActivateSession", ReplyAction = Namespaces.OpcUaWsdl + "/ActivateSessionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ActivateSessionFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<ActivateSessionResponseMessage> ActivateSessionAsync(ActivateSessionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_CloseSession)
@@ -860,6 +1173,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CloseSession service request.
         /// </summary>
         CloseSessionResponseMessage EndCloseSession(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CloseSession service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/CloseSession", ReplyAction = Namespaces.OpcUaWsdl + "/CloseSessionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CloseSessionFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<CloseSessionResponseMessage> CloseSessionAsync(CloseSessionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Cancel)
@@ -880,6 +1202,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Cancel service request.
         /// </summary>
         CancelResponseMessage EndCancel(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Cancel service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Cancel", ReplyAction = Namespaces.OpcUaWsdl + "/CancelResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CancelFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<CancelResponseMessage> CancelAsync(CancelMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_AddNodes)
@@ -900,6 +1231,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a AddNodes service request.
         /// </summary>
         AddNodesResponseMessage EndAddNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the AddNodes service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/AddNodes", ReplyAction = Namespaces.OpcUaWsdl + "/AddNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/AddNodesFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<AddNodesResponseMessage> AddNodesAsync(AddNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_AddReferences)
@@ -920,6 +1260,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a AddReferences service request.
         /// </summary>
         AddReferencesResponseMessage EndAddReferences(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the AddReferences service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/AddReferences", ReplyAction = Namespaces.OpcUaWsdl + "/AddReferencesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/AddReferencesFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<AddReferencesResponseMessage> AddReferencesAsync(AddReferencesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteNodes)
@@ -940,6 +1289,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteNodes service request.
         /// </summary>
         DeleteNodesResponseMessage EndDeleteNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteNodes service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/DeleteNodes", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteNodesFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<DeleteNodesResponseMessage> DeleteNodesAsync(DeleteNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteReferences)
@@ -960,6 +1318,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteReferences service request.
         /// </summary>
         DeleteReferencesResponseMessage EndDeleteReferences(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteReferences service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/DeleteReferences", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteReferencesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteReferencesFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<DeleteReferencesResponseMessage> DeleteReferencesAsync(DeleteReferencesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Browse)
@@ -980,6 +1347,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Browse service request.
         /// </summary>
         BrowseResponseMessage EndBrowse(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Browse service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Browse", ReplyAction = Namespaces.OpcUaWsdl + "/BrowseResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/BrowseFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<BrowseResponseMessage> BrowseAsync(BrowseMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_BrowseNext)
@@ -1000,6 +1376,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a BrowseNext service request.
         /// </summary>
         BrowseNextResponseMessage EndBrowseNext(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the BrowseNext service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/BrowseNext", ReplyAction = Namespaces.OpcUaWsdl + "/BrowseNextResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/BrowseNextFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<BrowseNextResponseMessage> BrowseNextAsync(BrowseNextMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_TranslateBrowsePathsToNodeIds)
@@ -1020,6 +1405,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a TranslateBrowsePathsToNodeIds service request.
         /// </summary>
         TranslateBrowsePathsToNodeIdsResponseMessage EndTranslateBrowsePathsToNodeIds(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the TranslateBrowsePathsToNodeIds service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/TranslateBrowsePathsToNodeIds", ReplyAction = Namespaces.OpcUaWsdl + "/TranslateBrowsePathsToNodeIdsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/TranslateBrowsePathsToNodeIdsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<TranslateBrowsePathsToNodeIdsResponseMessage> TranslateBrowsePathsToNodeIdsAsync(TranslateBrowsePathsToNodeIdsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_RegisterNodes)
@@ -1040,6 +1434,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a RegisterNodes service request.
         /// </summary>
         RegisterNodesResponseMessage EndRegisterNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the RegisterNodes service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/RegisterNodes", ReplyAction = Namespaces.OpcUaWsdl + "/RegisterNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RegisterNodesFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<RegisterNodesResponseMessage> RegisterNodesAsync(RegisterNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_UnregisterNodes)
@@ -1060,6 +1463,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a UnregisterNodes service request.
         /// </summary>
         UnregisterNodesResponseMessage EndUnregisterNodes(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the UnregisterNodes service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/UnregisterNodes", ReplyAction = Namespaces.OpcUaWsdl + "/UnregisterNodesResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/UnregisterNodesFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<UnregisterNodesResponseMessage> UnregisterNodesAsync(UnregisterNodesMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_QueryFirst)
@@ -1080,6 +1492,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a QueryFirst service request.
         /// </summary>
         QueryFirstResponseMessage EndQueryFirst(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the QueryFirst service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/QueryFirst", ReplyAction = Namespaces.OpcUaWsdl + "/QueryFirstResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/QueryFirstFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<QueryFirstResponseMessage> QueryFirstAsync(QueryFirstMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_QueryNext)
@@ -1100,6 +1521,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a QueryNext service request.
         /// </summary>
         QueryNextResponseMessage EndQueryNext(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the QueryNext service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/QueryNext", ReplyAction = Namespaces.OpcUaWsdl + "/QueryNextResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/QueryNextFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<QueryNextResponseMessage> QueryNextAsync(QueryNextMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Read)
@@ -1120,6 +1550,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Read service request.
         /// </summary>
         ReadResponseMessage EndRead(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Read service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Read", ReplyAction = Namespaces.OpcUaWsdl + "/ReadResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ReadFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<ReadResponseMessage> ReadAsync(ReadMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_HistoryRead)
@@ -1140,6 +1579,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a HistoryRead service request.
         /// </summary>
         HistoryReadResponseMessage EndHistoryRead(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the HistoryRead service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/HistoryRead", ReplyAction = Namespaces.OpcUaWsdl + "/HistoryReadResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/HistoryReadFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<HistoryReadResponseMessage> HistoryReadAsync(HistoryReadMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Write)
@@ -1160,6 +1608,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Write service request.
         /// </summary>
         WriteResponseMessage EndWrite(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Write service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Write", ReplyAction = Namespaces.OpcUaWsdl + "/WriteResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/WriteFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<WriteResponseMessage> WriteAsync(WriteMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_HistoryUpdate)
@@ -1180,6 +1637,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a HistoryUpdate service request.
         /// </summary>
         HistoryUpdateResponseMessage EndHistoryUpdate(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the HistoryUpdate service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/HistoryUpdate", ReplyAction = Namespaces.OpcUaWsdl + "/HistoryUpdateResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/HistoryUpdateFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<HistoryUpdateResponseMessage> HistoryUpdateAsync(HistoryUpdateMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Call)
@@ -1200,6 +1666,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Call service request.
         /// </summary>
         CallResponseMessage EndCall(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Call service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Call", ReplyAction = Namespaces.OpcUaWsdl + "/CallResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CallFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<CallResponseMessage> CallAsync(CallMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_CreateMonitoredItems)
@@ -1220,6 +1695,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CreateMonitoredItems service request.
         /// </summary>
         CreateMonitoredItemsResponseMessage EndCreateMonitoredItems(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CreateMonitoredItems service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/CreateMonitoredItems", ReplyAction = Namespaces.OpcUaWsdl + "/CreateMonitoredItemsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CreateMonitoredItemsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<CreateMonitoredItemsResponseMessage> CreateMonitoredItemsAsync(CreateMonitoredItemsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_ModifyMonitoredItems)
@@ -1240,6 +1724,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a ModifyMonitoredItems service request.
         /// </summary>
         ModifyMonitoredItemsResponseMessage EndModifyMonitoredItems(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the ModifyMonitoredItems service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/ModifyMonitoredItems", ReplyAction = Namespaces.OpcUaWsdl + "/ModifyMonitoredItemsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ModifyMonitoredItemsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<ModifyMonitoredItemsResponseMessage> ModifyMonitoredItemsAsync(ModifyMonitoredItemsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_SetMonitoringMode)
@@ -1260,6 +1753,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a SetMonitoringMode service request.
         /// </summary>
         SetMonitoringModeResponseMessage EndSetMonitoringMode(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the SetMonitoringMode service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/SetMonitoringMode", ReplyAction = Namespaces.OpcUaWsdl + "/SetMonitoringModeResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/SetMonitoringModeFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<SetMonitoringModeResponseMessage> SetMonitoringModeAsync(SetMonitoringModeMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_SetTriggering)
@@ -1280,6 +1782,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a SetTriggering service request.
         /// </summary>
         SetTriggeringResponseMessage EndSetTriggering(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the SetTriggering service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/SetTriggering", ReplyAction = Namespaces.OpcUaWsdl + "/SetTriggeringResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/SetTriggeringFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<SetTriggeringResponseMessage> SetTriggeringAsync(SetTriggeringMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteMonitoredItems)
@@ -1300,6 +1811,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteMonitoredItems service request.
         /// </summary>
         DeleteMonitoredItemsResponseMessage EndDeleteMonitoredItems(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteMonitoredItems service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/DeleteMonitoredItems", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteMonitoredItemsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteMonitoredItemsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<DeleteMonitoredItemsResponseMessage> DeleteMonitoredItemsAsync(DeleteMonitoredItemsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_CreateSubscription)
@@ -1320,6 +1840,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a CreateSubscription service request.
         /// </summary>
         CreateSubscriptionResponseMessage EndCreateSubscription(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the CreateSubscription service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/CreateSubscription", ReplyAction = Namespaces.OpcUaWsdl + "/CreateSubscriptionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/CreateSubscriptionFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<CreateSubscriptionResponseMessage> CreateSubscriptionAsync(CreateSubscriptionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_ModifySubscription)
@@ -1340,6 +1869,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a ModifySubscription service request.
         /// </summary>
         ModifySubscriptionResponseMessage EndModifySubscription(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the ModifySubscription service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/ModifySubscription", ReplyAction = Namespaces.OpcUaWsdl + "/ModifySubscriptionResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/ModifySubscriptionFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<ModifySubscriptionResponseMessage> ModifySubscriptionAsync(ModifySubscriptionMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_SetPublishingMode)
@@ -1360,6 +1898,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a SetPublishingMode service request.
         /// </summary>
         SetPublishingModeResponseMessage EndSetPublishingMode(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the SetPublishingMode service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/SetPublishingMode", ReplyAction = Namespaces.OpcUaWsdl + "/SetPublishingModeResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/SetPublishingModeFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<SetPublishingModeResponseMessage> SetPublishingModeAsync(SetPublishingModeMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Publish)
@@ -1380,6 +1927,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Publish service request.
         /// </summary>
         PublishResponseMessage EndPublish(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Publish service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Publish", ReplyAction = Namespaces.OpcUaWsdl + "/PublishResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/PublishFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<PublishResponseMessage> PublishAsync(PublishMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_Republish)
@@ -1400,6 +1956,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a Republish service request.
         /// </summary>
         RepublishResponseMessage EndRepublish(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the Republish service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/Republish", ReplyAction = Namespaces.OpcUaWsdl + "/RepublishResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RepublishFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<RepublishResponseMessage> RepublishAsync(RepublishMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_TransferSubscriptions)
@@ -1420,6 +1985,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a TransferSubscriptions service request.
         /// </summary>
         TransferSubscriptionsResponseMessage EndTransferSubscriptions(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the TransferSubscriptions service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/TransferSubscriptions", ReplyAction = Namespaces.OpcUaWsdl + "/TransferSubscriptionsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/TransferSubscriptionsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<TransferSubscriptionsResponseMessage> TransferSubscriptionsAsync(TransferSubscriptionsMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_DeleteSubscriptions)
@@ -1440,6 +2014,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a DeleteSubscriptions service request.
         /// </summary>
         DeleteSubscriptionsResponseMessage EndDeleteSubscriptions(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the DeleteSubscriptions service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/DeleteSubscriptions", ReplyAction = Namespaces.OpcUaWsdl + "/DeleteSubscriptionsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/DeleteSubscriptionsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<DeleteSubscriptionsResponseMessage> DeleteSubscriptionsAsync(DeleteSubscriptionsMessage request);
+        #endif
         #endif
     }
     #endregion
@@ -1502,6 +2085,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a FindServers service request.
         /// </summary>
         FindServersResponseMessage EndFindServers(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the FindServers service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/FindServers", ReplyAction = Namespaces.OpcUaWsdl + "/FindServersResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/FindServersFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<FindServersResponseMessage> FindServersAsync(FindServersMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_FindServersOnNetwork)
@@ -1516,6 +2108,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a FindServersOnNetwork service request.
         /// </summary>
         FindServersOnNetworkResponseMessage EndFindServersOnNetwork(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the FindServersOnNetwork service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/FindServersOnNetwork", ReplyAction = Namespaces.OpcUaWsdl + "/FindServersOnNetworkResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/FindServersOnNetworkFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<FindServersOnNetworkResponseMessage> FindServersOnNetworkAsync(FindServersOnNetworkMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_GetEndpoints)
@@ -1530,6 +2131,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a GetEndpoints service request.
         /// </summary>
         GetEndpointsResponseMessage EndGetEndpoints(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the GetEndpoints service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/GetEndpoints", ReplyAction = Namespaces.OpcUaWsdl + "/GetEndpointsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/GetEndpointsFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<GetEndpointsResponseMessage> GetEndpointsAsync(GetEndpointsMessage request);
+        #endif
         #endif
     }
     #endif
@@ -1562,6 +2172,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a FindServers service request.
         /// </summary>
         FindServersResponseMessage EndFindServers(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the FindServers service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/FindServers", ReplyAction = Namespaces.OpcUaWsdl + "/FindServersResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/FindServersFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<FindServersResponseMessage> FindServersAsync(FindServersMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_FindServersOnNetwork)
@@ -1582,6 +2201,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a FindServersOnNetwork service request.
         /// </summary>
         FindServersOnNetworkResponseMessage EndFindServersOnNetwork(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the FindServersOnNetwork service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/FindServersOnNetwork", ReplyAction = Namespaces.OpcUaWsdl + "/FindServersOnNetworkResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/FindServersOnNetworkFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<FindServersOnNetworkResponseMessage> FindServersOnNetworkAsync(FindServersOnNetworkMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_GetEndpoints)
@@ -1602,6 +2230,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a GetEndpoints service request.
         /// </summary>
         GetEndpointsResponseMessage EndGetEndpoints(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the GetEndpoints service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/GetEndpoints", ReplyAction = Namespaces.OpcUaWsdl + "/GetEndpointsResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/GetEndpointsFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<GetEndpointsResponseMessage> GetEndpointsAsync(GetEndpointsMessage request);
+        #endif
         #endif
     }
     #endregion
@@ -1655,6 +2292,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a RegisterServer service request.
         /// </summary>
         RegisterServerResponseMessage EndRegisterServer(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the RegisterServer service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/RegisterServer", ReplyAction = Namespaces.OpcUaWsdl + "/RegisterServerResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RegisterServerFault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<RegisterServerResponseMessage> RegisterServerAsync(RegisterServerMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_RegisterServer2)
@@ -1669,6 +2315,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a RegisterServer2 service request.
         /// </summary>
         RegisterServer2ResponseMessage EndRegisterServer2(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the RegisterServer2 service.
+        /// </summary>
+        [OperationContractAttribute(Action=Namespaces.OpcUaWsdl + "/RegisterServer2", ReplyAction = Namespaces.OpcUaWsdl + "/RegisterServer2Response")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RegisterServer2Fault", Name = "ServiceFault", Namespace = Namespaces.OpcUaXsd)]
+        Task<RegisterServer2ResponseMessage> RegisterServer2Async(RegisterServer2Message request);
+        #endif
         #endif
     }
     #endif
@@ -1701,6 +2356,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a RegisterServer service request.
         /// </summary>
         RegisterServerResponseMessage EndRegisterServer(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the RegisterServer service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/RegisterServer", ReplyAction = Namespaces.OpcUaWsdl + "/RegisterServerResponse")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RegisterServerFault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<RegisterServerResponseMessage> RegisterServerAsync(RegisterServerMessage request);
+        #endif
         #endif
 
         #if (!OPCUA_EXCLUDE_RegisterServer2)
@@ -1721,6 +2385,15 @@ namespace Opc.Ua
         /// The method used to retrieve the results of a RegisterServer2 service request.
         /// </summary>
         RegisterServer2ResponseMessage EndRegisterServer2(IAsyncResult result);
+
+        #if (NET_STANDARD_ASYNC)
+        /// <summary>
+        /// The async operation contract for the RegisterServer2 service.
+        /// </summary>
+        [OperationContract(Action = Namespaces.OpcUaWsdl + "/RegisterServer2", ReplyAction = Namespaces.OpcUaWsdl + "/RegisterServer2Response")]
+        [FaultContract(typeof(ServiceFault), Action = Namespaces.OpcUaWsdl + "/RegisterServer2Fault", Name="ServiceFault", Namespace=Namespaces.OpcUaXsd)]
+        Task<RegisterServer2ResponseMessage> RegisterServer2Async(RegisterServer2Message request);
+        #endif
         #endif
     }
     #endregion

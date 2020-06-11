@@ -2,7 +2,7 @@
  * Copyright (c) 2005-2019 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,7 +11,7 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -109,16 +109,38 @@ namespace NetCoreConsoleClient
             string endpointURL;
             if (extraArgs.Count == 0)
             {
-                // use OPC UA .Net Sample server 
-                endpointURL = "opc.tcp://localhost:51210/UA/SampleServer";
+                // use OPC UA .Net Sample server
+                endpointURL = "opc.tcp://localhost:51000";
             }
             else
             {
                 endpointURL = extraArgs[0];
             }
 
-            MySampleClient client = new MySampleClient(endpointURL, autoAccept, stopTimeout);
-            client.Run();
+            const int SERVERS = 25;
+            int port = 51100;
+            var clients = new MySampleClient[SERVERS];
+            for (int i = 0; i < SERVERS; i++)
+            {
+                string url = $"opc.tcp://localhost:{port}";
+
+                Task.Run(async () => {
+                    try
+                    {
+                        var client = new MySampleClient(url, autoAccept, stopTimeout);
+                        await client.Run();
+                    }
+                    catch (AggregateException e)
+                    {
+                        Console.WriteLine(e.Flatten());
+                        Console.WriteLine($"Error connecting to {url}");
+                    }
+                });
+
+                port++;
+            }
+
+            Console.Read();
 
             return (int)MySampleClient.ExitCode;
         }
@@ -133,6 +155,7 @@ namespace NetCoreConsoleClient
         int clientRunTime = Timeout.Infinite;
         static bool autoAccept = false;
         static ExitCode exitCode;
+        static SemaphoreSlim _staticLock = new SemaphoreSlim(1, 1);
 
         public MySampleClient(string _endpointURL, bool _autoAccept, int _stopTimeout)
         {
@@ -141,11 +164,12 @@ namespace NetCoreConsoleClient
             clientRunTime = _stopTimeout <= 0 ? Timeout.Infinite : _stopTimeout * 1000;
         }
 
-        public void Run()
+        public async Task Run()
         {
             try
             {
-                ConsoleSampleClient().Wait();
+                //ThreadPool.SetMinThreads(25, 25);
+                await ConsoleSampleClient();
             }
             catch (Exception ex)
             {
@@ -154,21 +178,18 @@ namespace NetCoreConsoleClient
                 return;
             }
 
-            ManualResetEvent quitEvent = new ManualResetEvent(false);
+            var cts = new CancellationTokenSource(clientRunTime);
             try
             {
-                Console.CancelKeyPress += (sender, eArgs) =>
-                {
-                    quitEvent.Set();
+                Console.CancelKeyPress += (sender, eArgs) => {
+                    cts.Cancel();
                     eArgs.Cancel = true;
                 };
             }
             catch
             {
             }
-
-            // wait for timeout or Ctrl-C
-            quitEvent.WaitOne(clientRunTime);
+            await Task.Delay(clientRunTime, cts.Token).ConfigureAwait(false);
 
             // return error conditions
             if (session.KeepAliveStopped)
@@ -184,21 +205,20 @@ namespace NetCoreConsoleClient
 
         private async Task ConsoleSampleClient()
         {
-            Console.WriteLine("1 - Create an Application Configuration.");
+            Console.WriteLine($"{endpointURL} 1 - Create an Application Configuration.");
             exitCode = ExitCode.ErrorCreateApplication;
 
-            ApplicationInstance application = new ApplicationInstance
-            {
+            ApplicationInstance application = new ApplicationInstance {
                 ApplicationName = "UA Core Sample Client",
                 ApplicationType = ApplicationType.Client,
                 ConfigSectionName = Utils.IsRunningOnMono() ? "Opc.Ua.MonoSampleClient" : "Opc.Ua.SampleClient"
             };
 
             // load the application configuration.
-            ApplicationConfiguration config = await application.LoadApplicationConfiguration(false);
+            ApplicationConfiguration config = await application.LoadApplicationConfiguration(false).ConfigureAwait(false);
 
             // check the application certificate.
-            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(false, 0);
+            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(false, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");
@@ -218,29 +238,50 @@ namespace NetCoreConsoleClient
                 Console.WriteLine("    WARN: missing application certificate, using unsecure connection.");
             }
 
-            Console.WriteLine("2 - Discover endpoints of {0}.", endpointURL);
+            Console.WriteLine($"{endpointURL} 2 - Discover endpoints of {0}.", endpointURL);
             exitCode = ExitCode.ErrorDiscoverEndpoints;
-            var selectedEndpoint = CoreClientUtils.SelectEndpoint(endpointURL, haveAppCertificate, 15000);
+
+            EndpointDescription selectedEndpoint;
+            //await _staticLock.WaitAsync();
+            //try
+            //{
+            //selectedEndpoint = CoreClientUtils.SelectEndpoint(endpointURL, haveAppCertificate, 15000);
+            selectedEndpoint = await CoreClientUtils.SelectEndpointAsync(endpointURL, haveAppCertificate, 15000).ConfigureAwait(false);
+            //}
+            //finally
+            //{
+            //    _staticLock.Release();
+            //}
+
             Console.WriteLine("    Selected endpoint uses: {0}",
                 selectedEndpoint.SecurityPolicyUri.Substring(selectedEndpoint.SecurityPolicyUri.LastIndexOf('#') + 1));
 
-            Console.WriteLine("3 - Create a session with OPC UA server.");
+            Console.WriteLine($"{endpointURL} 3 - Create a session with OPC UA server.");
             exitCode = ExitCode.ErrorCreateSession;
             var endpointConfiguration = EndpointConfiguration.Create(config);
             var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
-            session = await Session.Create(config, endpoint, false, "OPC UA Console Client", 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+
+            //await _staticLock.WaitAsync();
+            //try
+            //{
+                session = await Session.Create(config, endpoint, false, "OPC UA Console Client", 60000, new UserIdentity(new AnonymousIdentityToken()), null).ConfigureAwait(false);
+            //}
+            //finally
+            //{
+            //    _staticLock.Release();
+            //}
 
             // register keep alive handler
             session.KeepAlive += Client_KeepAlive;
 
-            Console.WriteLine("4 - Browse the OPC UA server namespace.");
+            Console.WriteLine($"{endpointURL} 4 - Browse the OPC UA server namespace.");
             exitCode = ExitCode.ErrorBrowseNamespace;
             ReferenceDescriptionCollection references;
             Byte[] continuationPoint;
 
-            references = session.FetchReferences(ObjectIds.ObjectsFolder);
+            references = await session.FetchReferencesAsync(ObjectIds.ObjectsFolder, CancellationToken.None).ConfigureAwait(false);
 
-            session.Browse(
+            var response = await session.BrowseAsync(
                 null,
                 null,
                 ObjectIds.ObjectsFolder,
@@ -249,8 +290,10 @@ namespace NetCoreConsoleClient
                 ReferenceTypeIds.HierarchicalReferences,
                 true,
                 (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
-                out continuationPoint,
-                out references);
+                CancellationToken.None).ConfigureAwait(false); ;
+
+            continuationPoint = response.Results[0].ContinuationPoint;
+            references = response.Results[0].References;
 
             Console.WriteLine(" DisplayName, BrowseName, NodeClass");
             foreach (var rd in references)
@@ -258,7 +301,7 @@ namespace NetCoreConsoleClient
                 Console.WriteLine(" {0}, {1}, {2}", rd.DisplayName, rd.BrowseName, rd.NodeClass);
                 ReferenceDescriptionCollection nextRefs;
                 byte[] nextCp;
-                session.Browse(
+                response = await session.BrowseAsync(
                     null,
                     null,
                     ExpandedNodeId.ToNodeId(rd.NodeId, session.NamespaceUris),
@@ -267,8 +310,10 @@ namespace NetCoreConsoleClient
                     ReferenceTypeIds.HierarchicalReferences,
                     true,
                     (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
-                    out nextCp,
-                    out nextRefs);
+                    CancellationToken.None).ConfigureAwait(false);
+
+                nextCp = response.Results[0].ContinuationPoint;
+                nextRefs = response.Results[0].References;
 
                 foreach (var nextRd in nextRefs)
                 {
@@ -276,27 +321,31 @@ namespace NetCoreConsoleClient
                 }
             }
 
-            Console.WriteLine("5 - Create a subscription with publishing interval of 1 second.");
+            Console.WriteLine($"{endpointURL} 5 - Create a subscription with publishing interval of 1 second.");
             exitCode = ExitCode.ErrorCreateSubscription;
             var subscription = new Subscription(session.DefaultSubscription) { PublishingInterval = 1000 };
 
-            Console.WriteLine("6 - Add a list of items (server current time and status) to the subscription.");
+            Console.WriteLine($"{endpointURL} 6 - Add a list of items (server current time and status) to the subscription.");
             exitCode = ExitCode.ErrorMonitoredItem;
             var list = new List<MonitoredItem> {
                 new MonitoredItem(subscription.DefaultItem)
                 {
-                    DisplayName = "ServerStatusCurrentTime", StartNodeId = "i="+Variables.Server_ServerStatus_CurrentTime.ToString()
+                    DisplayName = $"{endpointURL} ServerStatusCurrentTime",
+                    StartNodeId = "i=" + Variables.Server_ServerStatus_CurrentTime.ToString()
                 }
             };
             list.ForEach(i => i.Notification += OnNotification);
             subscription.AddItems(list);
 
-            Console.WriteLine("7 - Add the subscription to the session.");
+            Console.WriteLine($"{endpointURL} 7 - Add the subscription to the session.");
             exitCode = ExitCode.ErrorAddSubscription;
             session.AddSubscription(subscription);
-            subscription.Create();
 
-            Console.WriteLine("8 - Running...Press Ctrl-C to exit...");
+            await subscription.CreateAsync().ConfigureAwait(false);
+            // test special case, no change on server
+            await subscription.CreateItemsAsync().ConfigureAwait(false);
+
+            Console.WriteLine($"{endpointURL} 8 - Running...Press Ctrl-C to exit...");
             exitCode = ExitCode.ErrorRunning;
         }
 

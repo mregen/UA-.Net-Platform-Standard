@@ -861,7 +861,7 @@ namespace Opc.Ua.Client
             // update endpoint description using the discovery endpoint.
             if (endpoint.UpdateBeforeConnect && connection == null)
             {
-                endpoint.UpdateFromServer();
+                await endpoint.UpdateFromServerAsync().ConfigureAwait(false);
                 endpointDescription = endpoint.Description;
                 endpointConfiguration = endpoint.Configuration;
             }
@@ -876,8 +876,8 @@ namespace Opc.Ua.Client
             X509Certificate2Collection clientCertificateChain = null;
             if (endpointDescription.SecurityPolicyUri != SecurityPolicies.None)
             {
-                clientCertificate = await LoadCertificate(configuration);
-                clientCertificateChain = await LoadCertificateChain(configuration, clientCertificate);
+                clientCertificate = await LoadCertificate(configuration).ConfigureAwait(false);
+                clientCertificateChain = await LoadCertificateChain(configuration, clientCertificate).ConfigureAwait(false);
             }
 
             // initialize the channel which will be created with the server.
@@ -910,7 +910,7 @@ namespace Opc.Ua.Client
             // create the session.
             try
             {
-                session.Open(sessionName, sessionTimeout, identity, preferredLocales, checkDomain);
+                await session.OpenAsync(sessionName, sessionTimeout, identity, preferredLocales, checkDomain);
             }
             catch (Exception)
             {
@@ -2140,6 +2140,51 @@ namespace Opc.Ua.Client
         }
 
         /// <summary>
+        /// Fetches all references for the specified node.
+        /// </summary>
+        /// <param name="nodeId">The node id.</param>
+        /// <returns></returns>
+        public async Task<ReferenceDescriptionCollection> FetchReferencesAsync(NodeId nodeId, CancellationToken ct)
+        {
+            // browse for all references.
+            byte[] continuationPoint;
+            ReferenceDescriptionCollection descriptions;
+
+            ViewDescription view = new ViewDescription() {
+
+            };
+
+            var response = await BrowseAsync(
+                null,
+                null,
+                nodeId,
+                0,
+                BrowseDirection.Both,
+                null,
+                true,
+                0,
+                ct);
+
+            continuationPoint = response.Results[0].ContinuationPoint;
+            descriptions = response.Results[0].References;
+
+            // process any continuation point.
+            while (continuationPoint != null)
+            {
+                var nextResponse = await BrowseNextAsync(
+                    null,
+                    false,
+                    new ByteStringCollection() { continuationPoint },
+                    ct);
+
+                continuationPoint = nextResponse.Results[0].ContinuationPoint;
+                descriptions.AddRange(nextResponse.Results[0].References);
+            }
+
+            return descriptions;
+        }
+
+        /// <summary>
         /// Establishes a session with the server.
         /// </summary>
         /// <param name="sessionName">The name to assign to the session.</param>
@@ -2592,6 +2637,492 @@ namespace Opc.Ua.Client
                     out serverNonce,
                     out certificateResults,
                     out certificateDiagnosticInfos);
+
+                if (certificateResults != null)
+                {
+                    for (int i = 0; i < certificateResults.Count; i++)
+                    {
+                        Utils.Trace("ActivateSession result[{0}] = {1}", i, certificateResults[i]);
+                    }
+                }
+
+                if (certificateResults == null || certificateResults.Count == 0)
+                {
+                    Utils.Trace("Empty results were received for the ActivateSession call.");
+                }
+
+                // fetch namespaces.
+                FetchNamespaceTables();
+
+                lock (SyncRoot)
+                {
+                    // save nonces.
+                    m_sessionName = sessionName;
+                    m_identity = identity;
+                    m_previousServerNonce = previousServerNonce;
+                    m_serverNonce = serverNonce;
+                    m_serverCertificate = serverCertificate;
+
+                    // update system context.
+                    m_systemContext.PreferredLocales = m_preferredLocales;
+                    m_systemContext.SessionId = this.SessionId;
+                    m_systemContext.UserIdentity = identity;
+                }
+
+                // start keep alive thread.
+                StartKeepAliveTimer();
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    CloseSession(null, false);
+                    CloseChannel();
+                }
+                catch (Exception e)
+                {
+                    Utils.Trace("Cleanup: CloseSession() or CloseChannel() raised exception. " + e.Message);
+                }
+                finally
+                {
+                    SessionCreated(null, null);
+                }
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Establishes a session with the server.
+        /// </summary>
+        /// <param name="sessionName">The name to assign to the session.</param>
+        /// <param name="sessionTimeout">The session timeout.</param>
+        /// <param name="identity">The user identity.</param>
+        /// <param name="preferredLocales">The list of preferred locales.</param>
+        /// <param name="checkDomain">If set to <c>true</c> then the domain in the certificate must match the endpoint used.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+        public async Task OpenAsync(
+            string sessionName,
+            uint sessionTimeout,
+            IUserIdentity identity,
+            IList<string> preferredLocales,
+            bool checkDomain)
+        {
+            // check connection state.
+            lock (SyncRoot)
+            {
+                if (Connected)
+                {
+                    throw new ServiceResultException(StatusCodes.BadInvalidState, "Already connected to server.");
+                }
+            }
+
+            string securityPolicyUri = m_endpoint.Description.SecurityPolicyUri;
+
+            // catch security policies which are not supported by core
+            if (SecurityPolicies.GetDisplayName(securityPolicyUri) == null)
+            {
+                throw ServiceResultException.Create(
+                    StatusCodes.BadSecurityChecksFailed,
+                    "The chosen security policy is not supported by the client to connect to the server.");
+            }
+
+            // get the identity token.
+            if (identity == null)
+            {
+                identity = new UserIdentity();
+            }
+
+            // get identity token.
+            UserIdentityToken identityToken = identity.GetIdentityToken();
+
+            // check that the user identity is supported by the endpoint.
+            UserTokenPolicy identityPolicy = m_endpoint.Description.FindUserTokenPolicy(identityToken.PolicyId);
+
+            if (identityPolicy == null)
+            {
+                // try looking up by TokenType if the policy id was not found.
+                identityPolicy = m_endpoint.Description.FindUserTokenPolicy(identity.TokenType, identity.IssuedTokenType);
+
+                if (identityPolicy == null)
+                {
+                    throw ServiceResultException.Create(
+                        StatusCodes.BadUserAccessDenied,
+                        "Endpoint does not support the user identity type provided.");
+                }
+
+                identityToken.PolicyId = identityPolicy.PolicyId;
+            }
+
+            bool requireEncryption = securityPolicyUri != SecurityPolicies.None;
+            if (!requireEncryption)
+            {
+                requireEncryption = identityPolicy.SecurityPolicyUri != SecurityPolicies.None;
+            }
+
+            // validate the server certificate /certificate chain.
+            X509Certificate2 serverCertificate = null;
+            byte[] certificateData = m_endpoint.Description.ServerCertificate;
+
+            if (certificateData != null && certificateData.Length > 0)
+            {
+                X509Certificate2Collection serverCertificateChain = Utils.ParseCertificateChainBlob(certificateData);
+
+                if (serverCertificateChain.Count > 0)
+                {
+                    serverCertificate = serverCertificateChain[0];
+                }
+
+                if (requireEncryption)
+                {
+                    m_configuration.CertificateValidator.Validate(serverCertificateChain);
+
+                    if (checkDomain)
+                    {
+                        CheckCertificateDomain(m_endpoint);
+                    }
+                    // save for reconnect
+                    m_checkDomain = checkDomain;
+                }
+            }
+
+            // create a nonce.
+            uint length = (uint)m_configuration.SecurityConfiguration.NonceLength;
+            byte[] clientNonce = Utils.Nonce.CreateNonce(length);
+            NodeId sessionId = null;
+            NodeId sessionCookie = null;
+            byte[] serverNonce = new byte[0];
+            byte[] serverCertificateData = new byte[0];
+            SignatureData serverSignature = null;
+            EndpointDescriptionCollection serverEndpoints = null;
+            SignedSoftwareCertificateCollection serverSoftwareCertificates = null;
+
+            // send the application instance certificate for the client.
+            byte[] clientCertificateData = m_instanceCertificate != null ? m_instanceCertificate.RawData : null;
+            byte[] clientCertificateChainData = null;
+
+            if (m_instanceCertificateChain != null && m_instanceCertificateChain.Count > 0 && m_configuration.SecurityConfiguration.SendCertificateChain)
+            {
+                List<byte> clientCertificateChain = new List<byte>();
+
+                for (int i = 0; i < m_instanceCertificateChain.Count; i++)
+                {
+                    clientCertificateChain.AddRange(m_instanceCertificateChain[i].RawData);
+                }
+
+                clientCertificateChainData = clientCertificateChain.ToArray();
+            }
+
+            ApplicationDescription clientDescription = new ApplicationDescription();
+
+            clientDescription.ApplicationUri = m_configuration.ApplicationUri;
+            clientDescription.ApplicationName = m_configuration.ApplicationName;
+            clientDescription.ApplicationType = ApplicationType.Client;
+            clientDescription.ProductUri = m_configuration.ProductUri;
+
+            if (sessionTimeout == 0)
+            {
+                sessionTimeout = (uint)m_configuration.ClientConfiguration.DefaultSessionTimeout;
+            }
+
+            bool successCreateSession = false;
+            //if security none, first try to connect without certificate
+            if (m_endpoint.Description.SecurityPolicyUri == SecurityPolicies.None)
+            {
+                //first try to connect with client certificate NULL
+                try
+                {
+                    var response = await CreateSessionAsync(
+                        null,
+                        clientDescription,
+                        m_endpoint.Description.Server.ApplicationUri,
+                        m_endpoint.EndpointUrl.ToString(),
+                        sessionName,
+                        clientNonce,
+                        null,
+                        sessionTimeout,
+                        (uint)MessageContext.MaxMessageSize,
+                        CancellationToken.None);
+
+                    sessionId = response.SessionId;
+                    sessionCookie = response.AuthenticationToken;
+                    m_sessionTimeout = response.RevisedSessionTimeout;
+                    serverNonce = response.ServerNonce;
+                    serverCertificateData = response.ServerCertificate;
+                    serverEndpoints = response.ServerEndpoints;
+                    serverSoftwareCertificates = response.ServerSoftwareCertificates;
+                    serverSignature = response.ServerSignature;
+                    m_maxRequestMessageSize = response.MaxRequestMessageSize;
+
+                    successCreateSession = true;
+                }
+                catch (Exception ex)
+                {
+                    Utils.Trace("Create session failed with client certificate NULL. " + ex.Message);
+                    successCreateSession = false;
+                }
+            }
+
+            if (!successCreateSession)
+            {
+                var response = await CreateSessionAsync(
+                        null,
+                        clientDescription,
+                        m_endpoint.Description.Server.ApplicationUri,
+                        m_endpoint.EndpointUrl.ToString(),
+                        sessionName,
+                        clientNonce,
+                        clientCertificateChainData != null ? clientCertificateChainData : clientCertificateData,
+                        sessionTimeout,
+                        (uint)MessageContext.MaxMessageSize,
+                        CancellationToken.None);
+
+                sessionId = response.SessionId;
+                sessionCookie = response.AuthenticationToken;
+                m_sessionTimeout = response.RevisedSessionTimeout;
+                serverNonce = response.ServerNonce;
+                serverCertificateData = response.ServerCertificate;
+                serverEndpoints = response.ServerEndpoints;
+                serverSoftwareCertificates = response.ServerSoftwareCertificates;
+                serverSignature = response.ServerSignature;
+                m_maxRequestMessageSize = response.MaxRequestMessageSize;
+            }
+
+            // save session id.
+            lock (SyncRoot)
+            {
+                base.SessionCreated(sessionId, sessionCookie);
+            }
+
+            Utils.Trace("Revised session timeout value: {0}. ", m_sessionTimeout);
+            Utils.Trace("Max response message size value: {0}. Max request message size: {1} ", MessageContext.MaxMessageSize, m_maxRequestMessageSize);
+
+            //we need to call CloseSession if CreateSession was successful but some other exception is thrown
+            try
+            {
+                // verify that the server returned the same instance certificate.
+                if (serverCertificateData != null &&
+                    m_endpoint.Description.ServerCertificate != null &&
+                    !Utils.IsEqual(serverCertificateData, m_endpoint.Description.ServerCertificate))
+                {
+                    try
+                    {
+                        // verify for certificate chain in endpoint.
+                        X509Certificate2Collection serverCertificateChain = Utils.ParseCertificateChainBlob(m_endpoint.Description.ServerCertificate);
+
+                        if (serverCertificateChain.Count > 0 && !Utils.IsEqual(serverCertificateData, serverCertificateChain[0].RawData))
+                        {
+                            throw ServiceResultException.Create(
+                                        StatusCodes.BadCertificateInvalid,
+                                        "Server did not return the certificate used to create the secure channel.");
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw ServiceResultException.Create(
+                                StatusCodes.BadCertificateInvalid,
+                                "Server did not return the certificate used to create the secure channel.");
+                    }
+                }
+
+                if (serverSignature == null || serverSignature.Signature == null)
+                {
+                    Utils.Trace("Server signature is null or empty.");
+
+                    //throw ServiceResultException.Create(
+                    //    StatusCodes.BadSecurityChecksFailed,
+                    //    "Server signature is null or empty.");
+                }
+
+                if (m_expectedServerEndpoints != null && m_expectedServerEndpoints.Count > 0)
+                {
+                    // verify that the list of endpoints returned by CreateSession matches the list returned at GetEndpoints.
+                    if (m_expectedServerEndpoints.Count != serverEndpoints.Count)
+                    {
+                        throw ServiceResultException.Create(
+                            StatusCodes.BadSecurityChecksFailed,
+                            "Server did not return a number of ServerEndpoints that matches the one from GetEndpoints.");
+                    }
+
+                    for (int ii = 0; ii < serverEndpoints.Count; ii++)
+                    {
+                        EndpointDescription serverEndpoint = serverEndpoints[ii];
+                        EndpointDescription expectedServerEndpoint = m_expectedServerEndpoints[ii];
+
+                        if (serverEndpoint.SecurityMode != expectedServerEndpoint.SecurityMode ||
+                            serverEndpoint.SecurityPolicyUri != expectedServerEndpoint.SecurityPolicyUri ||
+                            serverEndpoint.TransportProfileUri != expectedServerEndpoint.TransportProfileUri ||
+                            serverEndpoint.SecurityLevel != expectedServerEndpoint.SecurityLevel)
+                        {
+                            throw ServiceResultException.Create(
+                                StatusCodes.BadSecurityChecksFailed,
+                                "The list of ServerEndpoints returned at CreateSession does not match the list from GetEndpoints.");
+                        }
+
+                        if (serverEndpoint.UserIdentityTokens.Count != expectedServerEndpoint.UserIdentityTokens.Count)
+                        {
+                            throw ServiceResultException.Create(
+                                StatusCodes.BadSecurityChecksFailed,
+                                "The list of ServerEndpoints returned at CreateSession does not match the one from GetEndpoints.");
+                        }
+
+                        for (int jj = 0; jj < serverEndpoint.UserIdentityTokens.Count; jj++)
+                        {
+                            if (!serverEndpoint.UserIdentityTokens[jj].IsEqual(expectedServerEndpoint.UserIdentityTokens[jj]))
+                            {
+                                throw ServiceResultException.Create(
+                                StatusCodes.BadSecurityChecksFailed,
+                                "The list of ServerEndpoints returned at CreateSession does not match the one from GetEndpoints.");
+                            }
+                        }
+                    }
+                }
+
+                // find the matching description (TBD - check domains against certificate).
+                bool found = false;
+                Uri expectedUrl = Utils.ParseUri(m_endpoint.Description.EndpointUrl);
+
+                if (expectedUrl != null)
+                {
+                    for (int ii = 0; ii < serverEndpoints.Count; ii++)
+                    {
+                        EndpointDescription serverEndpoint = serverEndpoints[ii];
+                        Uri actualUrl = Utils.ParseUri(serverEndpoint.EndpointUrl);
+
+                        if (actualUrl != null && actualUrl.Scheme == expectedUrl.Scheme)
+                        {
+                            if (serverEndpoint.SecurityPolicyUri == m_endpoint.Description.SecurityPolicyUri)
+                            {
+                                if (serverEndpoint.SecurityMode == m_endpoint.Description.SecurityMode)
+                                {
+                                    // ensure endpoint has up to date information.
+                                    m_endpoint.Description.Server.ApplicationName = serverEndpoint.Server.ApplicationName;
+                                    m_endpoint.Description.Server.ApplicationUri = serverEndpoint.Server.ApplicationUri;
+                                    m_endpoint.Description.Server.ApplicationType = serverEndpoint.Server.ApplicationType;
+                                    m_endpoint.Description.Server.ProductUri = serverEndpoint.Server.ProductUri;
+                                    m_endpoint.Description.TransportProfileUri = serverEndpoint.TransportProfileUri;
+                                    m_endpoint.Description.UserIdentityTokens = serverEndpoint.UserIdentityTokens;
+
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // could be a security risk.
+                if (!found)
+                {
+                    throw ServiceResultException.Create(
+                        StatusCodes.BadSecurityChecksFailed,
+                        "Server did not return an EndpointDescription that matched the one used to create the secure channel.");
+                }
+
+                // validate the server's signature.
+                byte[] dataToSign = Utils.Append(clientCertificateData, clientNonce);
+
+                if (!SecurityPolicies.Verify(serverCertificate, m_endpoint.Description.SecurityPolicyUri, dataToSign, serverSignature))
+                {
+                    // validate the signature with complete chain if the check with leaf certificate failed.
+                    if (clientCertificateChainData != null)
+                    {
+                        dataToSign = Utils.Append(clientCertificateChainData, clientNonce);
+
+                        if (!SecurityPolicies.Verify(serverCertificate, m_endpoint.Description.SecurityPolicyUri, dataToSign, serverSignature))
+                        {
+                            throw ServiceResultException.Create(
+                                StatusCodes.BadApplicationSignatureInvalid,
+                                "Server did not provide a correct signature for the nonce data provided by the client.");
+                        }
+                    }
+                    else
+                    {
+                        throw ServiceResultException.Create(
+                           StatusCodes.BadApplicationSignatureInvalid,
+                           "Server did not provide a correct signature for the nonce data provided by the client.");
+                    }
+                }
+
+                // get a validator to check certificates provided by server.
+                CertificateValidator validator = m_configuration.CertificateValidator;
+
+                // validate software certificates.
+                List<SoftwareCertificate> softwareCertificates = new List<SoftwareCertificate>();
+
+                foreach (SignedSoftwareCertificate signedCertificate in serverSoftwareCertificates)
+                {
+                    SoftwareCertificate softwareCertificate = null;
+
+                    ServiceResult result = SoftwareCertificate.Validate(
+                        validator,
+                        signedCertificate.CertificateData,
+                        out softwareCertificate);
+
+                    if (ServiceResult.IsBad(result))
+                    {
+                        OnSoftwareCertificateError(signedCertificate, result);
+                    }
+
+                    softwareCertificates.Add(softwareCertificate);
+                }
+
+                // check if software certificates meet application requirements.
+                ValidateSoftwareCertificates(softwareCertificates);
+
+                // create the client signature.
+                dataToSign = Utils.Append(serverCertificate != null ? serverCertificate.RawData : null, serverNonce);
+                SignatureData clientSignature = SecurityPolicies.Sign(m_instanceCertificate, securityPolicyUri, dataToSign);
+
+                // select the security policy for the user token.
+                securityPolicyUri = identityPolicy.SecurityPolicyUri;
+
+                if (String.IsNullOrEmpty(securityPolicyUri))
+                {
+                    securityPolicyUri = m_endpoint.Description.SecurityPolicyUri;
+                }
+
+                byte[] previousServerNonce = null;
+
+                if (TransportChannel.CurrentToken != null)
+                {
+                    previousServerNonce = TransportChannel.CurrentToken.ServerNonce;
+                }
+
+                // validate server nonce and security parameters for user identity.
+                ValidateServerNonce(identity, serverNonce, securityPolicyUri, previousServerNonce);
+
+                // sign data with user token.
+                SignatureData userTokenSignature = identityToken.Sign(dataToSign, securityPolicyUri);
+
+                // encrypt token.
+                identityToken.Encrypt(serverCertificate, serverNonce, securityPolicyUri);
+
+                // send the software certificates assigned to the client.
+                SignedSoftwareCertificateCollection clientSoftwareCertificates = GetSoftwareCertificates();
+
+                // copy the preferred locales if provided.
+                if (preferredLocales != null && preferredLocales.Count > 0)
+                {
+                    m_preferredLocales = new StringCollection(preferredLocales);
+                }
+
+                StatusCodeCollection certificateResults = null;
+                DiagnosticInfoCollection certificateDiagnosticInfos = null;
+
+                // activate session.
+                var response = await ActivateSessionAsync(
+                    null,
+                    clientSignature,
+                    clientSoftwareCertificates,
+                    m_preferredLocales,
+                    new ExtensionObject(identityToken),
+                    userTokenSignature,
+                    CancellationToken.None);
+
+                serverNonce = response.ServerNonce;
+                certificateResults = response.Results;
+                certificateDiagnosticInfos = response.DiagnosticInfos;
 
                 if (certificateResults != null)
                 {
@@ -3290,6 +3821,65 @@ namespace Opc.Ua.Client
             references = results[0].References;
 
             return responseHeader;
+        }
+
+        /// <summary>
+        /// Invokes the Browse service.
+        /// </summary>
+        /// <param name="requestHeader">The request header.</param>
+        /// <param name="view">The view to browse.</param>
+        /// <param name="nodeToBrowse">The node to browse.</param>
+        /// <param name="maxResultsToReturn">The maximum number of returned values.</param>
+        /// <param name="browseDirection">The browse direction.</param>
+        /// <param name="referenceTypeId">The reference type id.</param>
+        /// <param name="includeSubtypes">If set to <c>true</c> the subtypes of the ReferenceType will be included in the browse.</param>
+        /// <param name="nodeClassMask">The node class mask.</param>
+        public virtual async Task<BrowseResponse> BrowseAsync(
+            RequestHeader requestHeader,
+            ViewDescription view,
+            NodeId nodeToBrowse,
+            uint maxResultsToReturn,
+            BrowseDirection browseDirection,
+            NodeId referenceTypeId,
+            bool includeSubtypes,
+            uint nodeClassMask,
+            CancellationToken ct)
+        {
+            BrowseDescription description = new BrowseDescription();
+
+            description.NodeId = nodeToBrowse;
+            description.BrowseDirection = browseDirection;
+            description.ReferenceTypeId = referenceTypeId;
+            description.IncludeSubtypes = includeSubtypes;
+            description.NodeClassMask = nodeClassMask;
+            description.ResultMask = (uint)BrowseResultMask.All;
+
+            BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
+            nodesToBrowse.Add(description);
+
+            BrowseResultCollection results;
+            DiagnosticInfoCollection diagnosticInfos;
+
+            var response = await BrowseAsync(
+                requestHeader,
+                view,
+                maxResultsToReturn,
+                nodesToBrowse,
+                ct).ConfigureAwait(false);
+
+            ResponseHeader responseHeader = response.ResponseHeader;
+            results = response.Results;
+            diagnosticInfos = response.DiagnosticInfos;
+
+            ClientBase.ValidateResponse(results, nodesToBrowse);
+            ClientBase.ValidateDiagnosticInfos(diagnosticInfos, nodesToBrowse);
+
+            if (StatusCode.IsBad(results[0].StatusCode))
+            {
+                throw new ServiceResultException(new ServiceResult(results[0].StatusCode, 0, diagnosticInfos, responseHeader.StringTable));
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -4347,8 +4937,7 @@ namespace Opc.Ua.Client
                 // Delete abandoned subscription from server.
                 Utils.Trace("Received Publish Response for Unknown SubscriptionId={0}", subscriptionId);
 
-                Task.Run(() =>
-                {
+                Task.Run(() => {
                     DeleteSubscription(subscriptionId);
                 });
             }

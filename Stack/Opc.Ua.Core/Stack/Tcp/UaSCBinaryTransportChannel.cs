@@ -11,6 +11,8 @@
 */
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Opc.Ua.Bindings
 {
@@ -335,6 +337,11 @@ namespace Opc.Ua.Bindings
         {
             IAsyncResult result = BeginSendRequest(request, null, null);
             return EndSendRequest(result);
+        }
+
+        public Task<IServiceResponse> SendRequestAsync(IServiceRequest request, CancellationToken ct)
+        {
+            return Task.Factory.FromAsync(BeginSendRequest(request, null, null), EndSendRequest);
         }
 
         /// <summary>

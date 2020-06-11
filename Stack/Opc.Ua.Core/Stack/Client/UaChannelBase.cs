@@ -13,6 +13,8 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
+using System.Threading;
+using System.Threading.Tasks;
 using Opc.Ua.Bindings;
 
 namespace Opc.Ua
@@ -873,6 +875,11 @@ namespace Opc.Ua
                 header.ServiceResult,
                 header.ServiceDiagnostics,
                 header.StringTable));
+        }
+
+        public Task<IServiceResponse> SendRequestAsync(IServiceRequest request, CancellationToken ct)
+        {
+            return Task.Factory.FromAsync<IServiceRequest, IServiceResponse>(BeginSendRequest, EndSendRequest, request, null);
         }
         #endregion
 
