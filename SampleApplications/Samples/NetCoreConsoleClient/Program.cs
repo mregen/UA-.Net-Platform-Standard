@@ -294,7 +294,10 @@ namespace NetCoreConsoleClient
             Console.WriteLine("7 - Add the subscription to the session.");
             exitCode = ExitCode.ErrorAddSubscription;
             session.AddSubscription(subscription);
-            subscription.Create();
+
+            await subscription.CreateAsync();
+            // test special case, no change on server
+            await subscription.CreateItemsAsync();
 
             Console.WriteLine("8 - Running...Press Ctrl-C to exit...");
             exitCode = ExitCode.ErrorRunning;
