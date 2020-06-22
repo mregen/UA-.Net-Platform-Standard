@@ -12,10 +12,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Xml;
 using System.IO;
 using System.Reflection;
+using System.Text;
+using System.Xml;
 using System.Xml.Schema;
 
 namespace Opc.Ua.Schema.Xml
@@ -24,81 +24,80 @@ namespace Opc.Ua.Schema.Xml
     /// Generates files used to describe data types.
     /// </summary>
     public class XmlSchemaValidator : SchemaValidator
-    {       
+    {
         #region Constructors
-		/// <summary>
-		/// Intializes the object with default values.
-		/// </summary>
-		public XmlSchemaValidator()
-		{
+        /// <summary>
+        /// Intializes the object with default values.
+        /// </summary>
+        public XmlSchemaValidator()
+        {
             SetResourcePaths(WellKnownDictionaries);
-		}
+        }
 
-		/// <summary>
-		/// Intializes the object with a file table.
-		/// </summary>
-		public XmlSchemaValidator(Dictionary<string,string> fileTable) : base(fileTable)
-		{
+        /// <summary>
+        /// Intializes the object with a file table.
+        /// </summary>
+        public XmlSchemaValidator(Dictionary<string, string> fileTable) : base(fileTable)
+        {
             SetResourcePaths(WellKnownDictionaries);
-		}
-        #endregion      
-        
+        }
+        #endregion
+
         #region Public Members
+        /// <summary>
+        /// The schema set that was validated.
+        /// </summary>
+        public XmlSchemaSet SchemaSet => m_schemaSet;
         /// <summary>
         /// The schema that was validated.
         /// </summary>
-        public XmlDocument TargetSchema
+        public XmlSchema TargetSchema => m_schema;
+
+        /// <summary>
+        /// Generates the code from the contents of the address space.
+        /// </summary>
+        public void Validate(string inputPath)
         {
-            get { return m_schema; }
-        }
-        
-		/// <summary>
-		/// Generates the code from the contents of the address space.
-		/// </summary>
-		public void Validate(string inputPath)
-		{
             using (Stream istrm = File.OpenRead(inputPath))
             {
                 Validate(istrm);
             }
         }
 
-		/// <summary>
-		/// Generates the code from the contents of the address space.
-		/// </summary>
-		public void Validate(Stream stream)
-		{
-            m_schema.Load(stream);
-            
-            foreach (XmlNode import in m_schema.ChildNodes)
-            {                    
-                if (import.NamespaceURI == Namespaces.OpcUa)
-                {
-                    StreamReader strm = new StreamReader(Assembly.Load(new AssemblyName("Opc.Ua.Core")).GetManifestResourceStream("Opc.Ua.Model.Opc.Ua.Types.xsd"));
-                    m_schema.Load(strm);
-                    continue;
-                }
+        /// <summary>
+        /// Generates the code from the contents of the address space.
+        /// </summary>
+        public void Validate(Stream stream)
+        {
+            m_schema = XmlSchema.Read(stream, new ValidationEventHandler(OnValidate));
 
+            var assembly = typeof(XmlSchemaValidator).GetTypeInfo().Assembly;
+            foreach (XmlSchemaImport import in m_schema.Includes)
+            {
                 string location = null;
 
-                if (!KnownFiles.TryGetValue(import.NamespaceURI, out location))
-                { 
-                    location = import.NamespaceURI;
+                if (!KnownFiles.TryGetValue(import.Namespace, out location))
+                {
+                    location = import.SchemaLocation;
                 }
-                
+
                 FileInfo fileInfo = new FileInfo(location);
                 if (!fileInfo.Exists)
                 {
-                    StreamReader strm = new StreamReader(Assembly.Load(new AssemblyName("Opc.Ua.Core")).GetManifestResourceStream(location));
-                    m_schema.Load(strm);
+                    StreamReader strm = new StreamReader(assembly.GetManifestResourceStream(location));
+                    import.Schema = XmlSchema.Read(strm, new ValidationEventHandler(OnValidate));
                 }
                 else
                 {
                     Stream strm = File.OpenRead(location);
-                    m_schema.Load(strm);
-                }                
+                    import.Schema = XmlSchema.Read(strm, new ValidationEventHandler(OnValidate));
+                }
             }
-		}       
+
+            m_schemaSet = new XmlSchemaSet();
+            m_schemaSet.Add(m_schema);
+            m_schemaSet.Compile();
+        }
 
         /// <summary>
         /// Returns the schema for the specified type (returns the entire schema if null).
@@ -106,32 +105,34 @@ namespace Opc.Ua.Schema.Xml
         public override string GetSchema(string typeName)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
-            
-            settings.Encoding    = Encoding.UTF8;
-            settings.Indent      = true;
+
+            settings.Encoding = Encoding.UTF8;
+            settings.Indent = true;
             settings.IndentChars = "    ";
 
             MemoryStream ostrm = new MemoryStream();
             XmlWriter writer = XmlWriter.Create(ostrm, settings);
-            
+
             try
             {
-                if (typeName == null || m_schema.ChildNodes.Count == 0)
+                if (typeName == null || m_schema.Elements.Values.Count == 0)
                 {
-                    m_schema.WriteTo(writer);
+                    m_schema.Write(writer);
                 }
                 else
                 {
-                    foreach (XmlNode current in m_schema.ChildNodes)
-                    {       
-                        XmlElement element = current as XmlElement;
+                    foreach (XmlSchemaObject current in m_schema.Elements.Values)
+                    {
+                        XmlSchemaElement element = current as XmlSchemaElement;
+
                         if (element != null)
                         {
                             if (element.Name == typeName)
-                            {                                
-                                XmlDocument schema = new XmlDocument();
-                                schema.AppendChild(element);
-                                schema.WriteTo(writer);
+                            {
+                                XmlSchema schema = new XmlSchema();
+                                schema.Items.Add(element.ElementSchemaType);
+                                schema.Items.Add(element);
+                                schema.Write(writer);
                                 break;
                             }
                         }
@@ -145,16 +146,26 @@ namespace Opc.Ua.Schema.Xml
             }
 
             return new UTF8Encoding().GetString(ostrm.ToArray());
-        } 
+        }
         #endregion
-        
-        #region Private Fields
-        private readonly string[][] WellKnownDictionaries = new string[][]
-        {
-            new string[] {  Namespaces.OpcUaBuiltInTypes, "Opc.Ua.Types.Schemas.BuiltInTypes.xsd" }
-        };
 
-        private XmlDocument m_schema = new XmlDocument();
+        #region Private Methods
+        /// <summary>
+        /// Handles a validation error.
+        /// </summary>
+        static void OnValidate(object sender, ValidationEventArgs args)
+        {
+            throw new InvalidOperationException(args.Message, args.Exception);
+        }
+        #endregion
+
+        #region Private Fields
+        protected static readonly string[][] WellKnownDictionaries = new string[][]
+        {
+            new string[] { "http://opcfoundation.org/UA/2008/02/Types.xsd", "Opc.Ua.Schema.Opc.Ua.Types.xsd" }
+        };
+        private XmlSchema m_schema;
+        private XmlSchemaSet m_schemaSet;
         #endregion
     }
 }
