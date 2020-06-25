@@ -162,7 +162,7 @@ namespace Opc.Ua.Schema.Xml
         #region Private Fields
         protected static readonly string[][] WellKnownDictionaries = new string[][]
         {
-            new string[] { "http://opcfoundation.org/UA/2008/02/Types.xsd", "Opc.Ua.Schema.Opc.Ua.Types.xsd" }
+            new string[] { Namespaces.OpcUaXsd, "Opc.Ua.Schema.Opc.Ua.Types.xsd" }
         };
         private XmlSchema m_schema;
         private XmlSchemaSet m_schemaSet;
