@@ -25,7 +25,7 @@ jobs:
   - name: msbuildversion
     value: '/p:Version=$(NBGV_Version) /p:AssemblyVersion=$(NBGV_SimpleVersion) /p:FileVersion=$(NBGV_AssemblyFileVersion)'
   - name: msbuildsign
-    value: '/p:AssemblyOriginatorKeyFile=$(strongnamefile.secureFilePath) /p:SignAssembly=true'
+    value: '/p:AssemblyOriginatorKeyFile=$(strongnamefile.secureFilePath) /p:SignAssembly=true /p:LicenseFile=$(licensefile.secureFilePath)'
   - name: nugetpreviewversion
     value: '$(NBGV_NuGetPackageVersion)'
   - name: nugetpublicversion
@@ -38,6 +38,11 @@ jobs:
     displayName: 'Download Strong Name Key'
     inputs:
       secureFile: 'OPCFoundation.NetStandard.Key.snk'
+  - task: DownloadSecureFile@1
+    name: licensefile
+    displayName: 'Download License File'
+    inputs:
+      secureFile: 'OPC Foundation REDISTRIBUTABLES Agreement of Use.txt'
   - task: DotNetCoreCLI@2
     inputs:
       command: 'custom'

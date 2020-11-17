@@ -23,13 +23,13 @@
   </PropertyGroup>
 
   <Choose>
-    <When Condition="'$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">
+    <When Condition="'$(LicenseFile)' != ''">
       <PropertyGroup>
         <PackageIcon>images/logo.jpg</PackageIcon>
         <PackageLicenseFile>licenses/LICENSE.txt</PackageLicenseFile>
       </PropertyGroup>
       <ItemGroup Condition="'$(IsPackable)' != 'false'">
-        <None Include="$(MSBuildThisFileDirectory)/Licenses/OPC Foundation REDISTRIBUTABLES Agreement of Use.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+        <None Include="$(LicenseFile)" Pack="true" PackagePath="$(PackageLicenseFile)"/>
         <None Include="$(MSBuildThisFileDirectory)/nuget/logo.jpg" Pack="true" PackagePath="$(PackageIcon)"/>
       </ItemGroup>
     </When>
