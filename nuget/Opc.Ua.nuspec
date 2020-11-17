@@ -24,6 +24,6 @@
   </metadata>
   <files>
     <file src="logo.jpg" target="images/" />
-    <file src="../Licenses/OPC Foundation REDISTRIBUTABLES Agreement of Use.txt" target="licenses/LICENSE.txt"/>
+    <file src="$licensefile$" target="licenses/LICENSE.txt"/>
   </files>
 </package>

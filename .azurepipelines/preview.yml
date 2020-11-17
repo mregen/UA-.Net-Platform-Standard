@@ -25,7 +25,11 @@ jobs:
   - name: msbuildversion
     value: '/p:Version=$(NBGV_Version) /p:AssemblyVersion=$(NBGV_SimpleVersion) /p:FileVersion=$(NBGV_AssemblyFileVersion)'
   - name: msbuildsign
-    value: '/p:AssemblyOriginatorKeyFile="$(strongnamefile.secureFilePath)" /p:SignAssembly=true /p:LicenseFile="$(licensefile.secureFilePath)"'
+    value: '/p:AssemblyOriginatorKeyFile="$(strongnamefile.secureFilePath)" /p:SignAssembly=true'
+  - name: opclicense
+    value: '/p:LicenseFile="$(licensefile.secureFilePath)"'
+  - name: nugetlicense
+    value: 'licensefile="$(licensefile.secureFilePath)"'
   - name: nugetpreviewversion
     value: '$(NBGV_NuGetPackageVersion)'
   - name: nugetpublicversion
@@ -74,7 +78,7 @@ jobs:
     inputs:
       command: build
       projects: 'UA Core Library.sln'
-      arguments: '--no-incremental --configuration ${{parameters.config}} ${{ variables.msbuildversion }} ${{ variables.msbuildsign }}'
+      arguments: '--no-incremental --configuration ${{parameters.config}} ${{ variables.msbuildversion }} ${{ variables.msbuildsign }} ${{ variables.opclicense }}'
   - task: CmdLine@2
     displayName: 'Sign Assemblies'
     condition: ne( variables['SigningClientSecret'], '')
@@ -88,6 +92,7 @@ jobs:
       packagesToPack:  'UA Core Library.sln'
       configuration: ${{parameters.config}}
       configurationToPack: ${{parameters.config}}
+      arguments: '${{ variables.opclicense }}'
       nobuild: true
   - task: NuGetCommand@2
     displayName: Pack Nuget Legacy Preview
@@ -98,6 +103,7 @@ jobs:
       packagesToPack: '**/Opc.*.nuspec'
       versioningScheme: 'byEnvVar'
       versionEnvVar: 'nugetpreviewversion'
+      buildProperties: '${{ nugetlicense }}'
   - task: NuGetCommand@2
     displayName: Pack Nuget Legacy Public
     condition: and(succeeded(), and(eq('${{parameters.config}}', 'Release'), eq(variables['NBGV_PublicRelease'], 'True')))
@@ -107,6 +113,7 @@ jobs:
       packagesToPack: '**/Opc.*.nuspec'
       versioningScheme: 'byEnvVar'
       versionEnvVar: 'nugetpublicversion'
+      buildProperties: '${{ nugetlicense }}'
   - task: CmdLine@2
     displayName: 'List of nuget packages to sign'
     inputs:
