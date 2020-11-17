@@ -25,7 +25,7 @@ jobs:
   - name: msbuildversion
     value: '/p:Version=$(NBGV_Version) /p:AssemblyVersion=$(NBGV_SimpleVersion) /p:FileVersion=$(NBGV_AssemblyFileVersion)'
   - name: msbuildsign
-    value: '/p:AssemblyOriginatorKeyFile=$(strongnamefile.secureFilePath) /p:SignAssembly=true /p:LicenseFile=$(licensefile.secureFilePath)'
+    value: '/p:AssemblyOriginatorKeyFile="$(strongnamefile.secureFilePath)" /p:SignAssembly=true /p:LicenseFile="$(licensefile.secureFilePath)"'
   - name: nugetpreviewversion
     value: '$(NBGV_NuGetPackageVersion)'
   - name: nugetpublicversion
