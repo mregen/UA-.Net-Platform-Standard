@@ -22,7 +22,7 @@ namespace Opc.Ua
     /// <summary>
     /// Writes objects to a JSON stream.
     /// </summary>
-    public class JsonEncoder : IEncoder, IDisposable
+    public class JsonEncoder : IJsonEncoder
     {
         #region Private Fields
         private MemoryStream m_destination;
@@ -1317,7 +1317,6 @@ namespace Opc.Ua
                     m_context.MaxEncodingNestingLevels);
             }
 
-
             if (value == null)
             {
                 WriteSimpleField(fieldName, null, false);
@@ -2399,7 +2398,6 @@ namespace Opc.Ua
                 }
             }
         }
-
         #endregion
 
         #region Private Methods

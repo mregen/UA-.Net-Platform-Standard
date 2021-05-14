@@ -325,6 +325,36 @@ namespace Opc.Ua.Client.Controls
                     info.Value.Value,
                     true,
                     "View Attribute Value");
+
+            }
+            catch (Exception exception)
+            {
+                ClientUtils.HandleException(this.Text, exception);
+            }
+        }
+
+        private void jsonToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (AttributesLV.SelectedItems.Count == 0)
+                {
+                    return;
+                }
+
+                AttributeInfo info = AttributesLV.SelectedItems[0].Tag as AttributeInfo;
+
+                if (info == null || info.Value == null)
+                {
+                    return;
+                }
+
+                new JsonEncoded().ShowDialog(
+                    m_session,
+                    info.NodeToRead.NodeId,
+                    info.NodeToRead.AttributeId,
+                    info.Value,
+                    "JSON PubSub encoding");
             }
             catch (Exception exception)
             {

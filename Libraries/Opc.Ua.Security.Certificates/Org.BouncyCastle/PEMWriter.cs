@@ -82,15 +82,15 @@ namespace Opc.Ua.Security.Certificates
         #region Private Methods
         private static byte[] EncodeAsPEM(byte[] content, string contentType)
         {
-            const int LineLength = 64;
+            const int lineLength = 64;
             string base64 = Convert.ToBase64String(content);
             using (TextWriter textWriter = new StringWriter())
             {
                 textWriter.WriteLine("-----BEGIN {0}-----", contentType);
-                while (base64.Length > LineLength)
+                while (base64.Length > lineLength)
                 {
-                    textWriter.WriteLine(base64.Substring(0, LineLength));
-                    base64 = base64.Substring(LineLength);
+                    textWriter.WriteLine(base64.Substring(0, lineLength));
+                    base64 = base64.Substring(lineLength);
                 }
                 textWriter.WriteLine(base64);
                 textWriter.WriteLine("-----END {0}-----", contentType);

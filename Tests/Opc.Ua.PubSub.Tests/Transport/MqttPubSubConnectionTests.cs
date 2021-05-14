@@ -33,11 +33,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
-using Opc.Ua.PubSub.Encoding;
 using Opc.Ua.PubSub.Transport;
 using Opc.Ua.PubSub.Tests.Encoding;
 
-namespace Opc.Ua.PubSub.Tests.Transport
+namespace Opc.Ua.PubSub.Encoding.Transport.Tests
 {
     [TestFixture(Description = "Tests for Mqtt connections")]
     public partial class MqttPubSubConnectionTests

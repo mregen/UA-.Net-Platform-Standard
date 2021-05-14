@@ -154,7 +154,7 @@ namespace Opc.Ua.PubSub.Transport
                             // check MessageSettings to see how to encode DataSet
                             if (uadpDataSetMessageSettings != null)
                             {
-                                UadpDataSetMessage uadpDataSetMessage = new UadpDataSetMessage(dataSet);
+                                UadpDataSetMessage uadpDataSetMessage = new Opc.Ua.PubSub.Encoding.UadpDataSetMessage(dataSet);
                                 uadpDataSetMessage.SetMessageContentMask((UadpDataSetMessageContentMask)uadpDataSetMessageSettings.DataSetMessageContentMask);
                                 uadpDataSetMessage.SetFieldContentMask((DataSetFieldContentMask)dataSetWriter.DataSetFieldContentMask);
                                 uadpDataSetMessage.ConfiguredSize = uadpDataSetMessageSettings.ConfiguredSize;
@@ -168,7 +168,7 @@ namespace Opc.Ua.PubSub.Transport
                                  ExtensionObject.ToEncodeable(dataSetWriter.MessageSettings) as JsonDataSetWriterMessageDataType;
                             if (jsonDataSetMessageSettings != null)
                             {
-                                JsonDataSetMessage jsonDataSetMessage = new JsonDataSetMessage(dataSet);
+                                var jsonDataSetMessage = new Opc.Ua.PubSub.Encoding.JsonDataSetMessage(dataSet);
                                 jsonDataSetMessage.SetMessageContentMask((JsonDataSetMessageContentMask)jsonDataSetMessageSettings.DataSetMessageContentMask);
                                 jsonDataSetMessage.SetFieldContentMask((DataSetFieldContentMask)dataSetWriter.DataSetFieldContentMask);
                                 uaDataSetMessage = jsonDataSetMessage;
@@ -200,7 +200,7 @@ namespace Opc.Ua.PubSub.Transport
 
             if (m_messageMapping == MessageMapping.Uadp)
             {
-                UadpNetworkMessage uadpNetworkMessage = new UadpNetworkMessage(writerGroupConfiguration, dataSetMessages);
+                UadpNetworkMessage uadpNetworkMessage = new Opc.Ua.PubSub.Encoding.UadpNetworkMessage(writerGroupConfiguration, dataSetMessages);
                 uadpNetworkMessage.SetNetworkMessageContentMask((UadpNetworkMessageContentMask)uadpMessageSettings?.NetworkMessageContentMask);
                 // Network message header
                 uadpNetworkMessage.PublisherId = PubSubConnectionConfiguration.PublisherId.Value;
@@ -234,7 +234,7 @@ namespace Opc.Ua.PubSub.Transport
 
                 foreach (List<UaDataSetMessage> dataSetMessagesToUse in dataSetMessagesList)
                 {
-                    JsonNetworkMessage jsonNetworkMessage = new JsonNetworkMessage(writerGroupConfiguration, dataSetMessagesToUse);
+                    var jsonNetworkMessage = new Opc.Ua.PubSub.Encoding.JsonNetworkMessage(writerGroupConfiguration, dataSetMessagesToUse);
                     jsonNetworkMessage.SetNetworkMessageContentMask((JsonNetworkMessageContentMask)jsonMessageSettings?.NetworkMessageContentMask);
                     jsonNetworkMessage.MessageId = Guid.NewGuid().ToString();
                     // Network message header
@@ -495,11 +495,11 @@ namespace Opc.Ua.PubSub.Transport
                 UaNetworkMessage networkMessage = null;
                 if (m_messageMapping == MessageMapping.Uadp)
                 {
-                    networkMessage = new UadpNetworkMessage();
+                    networkMessage = new Opc.Ua.PubSub.Encoding.UadpNetworkMessage();
                 }
                 else if (m_messageMapping == MessageMapping.Json)
                 {
-                    networkMessage = new JsonNetworkMessage();
+                    networkMessage = new Opc.Ua.PubSub.Encoding.JsonNetworkMessage();
                 }
                 // trigger message decoding
                 if (networkMessage != null)

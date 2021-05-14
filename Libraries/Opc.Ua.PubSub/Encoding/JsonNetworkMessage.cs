@@ -29,6 +29,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Opc.Ua.PubSub.PublishedData;
 
 namespace Opc.Ua.PubSub.Encoding
@@ -132,13 +134,11 @@ namespace Opc.Ua.PubSub.Encoding
         /// Get and Set ReplyTo
         /// </summary>
         public string ReplyTo { get; set; }
-
         #endregion
 
         #endregion
 
         #region Public Methods
-
         /// <summary>
         /// Set network message content mask
         /// </summary>
@@ -156,16 +156,28 @@ namespace Opc.Ua.PubSub.Encoding
         /// <summary>
         /// Encodes the object and returns the resulting byte array.
         /// </summary>
-        /// <returns></returns>
         public override byte[] Encode()
         {
             ServiceMessageContext messageContext = new ServiceMessageContext();
             messageContext.NamespaceUris = ServiceMessageContext.GlobalContext.NamespaceUris;
             messageContext.ServerUris = ServiceMessageContext.GlobalContext.ServerUris;
 
+            using (MemoryStream stream = new MemoryStream(1024))
+            using (var writer = new StreamWriter(stream, new UTF8Encoding(false), 65535, true))
+            {
+                Encode(messageContext, writer);
+                return stream.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Encodes the object and returns the resulting byte array.
+        /// </summary>
+        public override void Encode(ServiceMessageContext messageContext, StreamWriter writer)
+        {
             bool topLevelIsArray = !HasNetworkMessageHeader && !HasSingleDataSetMessage;
 
-            using (JsonEncoder encoder = new JsonEncoder(messageContext, false, null, topLevelIsArray))
+            using (JsonEncoder encoder = new JsonEncoder(messageContext, false, writer, topLevelIsArray))
             {
                 // handle no header
                 if (HasNetworkMessageHeader)
@@ -209,10 +221,6 @@ namespace Opc.Ua.PubSub.Encoding
                         }
                     }
                 }
-
-                byte[] bytes = System.Text.Encoding.ASCII.GetBytes(encoder.CloseAndReturnText());
-
-                return bytes;
             }
         }
 

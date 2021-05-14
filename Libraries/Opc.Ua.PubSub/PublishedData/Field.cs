@@ -52,6 +52,6 @@ namespace Opc.Ua.PubSub.PublishedData
         /// <summary>
         /// Get configured <see cref="FieldMetaData"/> object for this <see cref="Field"/> instance.
         /// </summary>
-        public FieldMetaData FieldMetaData { get; internal set; }
+        public FieldMetaData FieldMetaData { get; set; }
     }
 }

@@ -61,23 +61,25 @@ namespace Opc.Ua.Client.Controls
             this.AttributesMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.Attributes_ViewMI = new System.Windows.Forms.ToolStripMenuItem();
             this.AttributesLV = new System.Windows.Forms.ListView();
-            this.NameCH = new System.Windows.Forms.ColumnHeader();
-            this.DataTypeCH = new System.Windows.Forms.ColumnHeader();
-            this.ValueCH = new System.Windows.Forms.ColumnHeader();
+            this.NameCH = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.DataTypeCH = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ValueCH = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Json_ViewMI = new System.Windows.Forms.ToolStripMenuItem();
             this.AttributesMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // AttributesMenu
             // 
             this.AttributesMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Attributes_ViewMI});
+            this.Attributes_ViewMI,
+            this.Json_ViewMI});
             this.AttributesMenu.Name = "BrowseMenu";
-            this.AttributesMenu.Size = new System.Drawing.Size(100, 26);
+            this.AttributesMenu.Size = new System.Drawing.Size(181, 70);
             // 
             // Attributes_ViewMI
             // 
             this.Attributes_ViewMI.Name = "Attributes_ViewMI";
-            this.Attributes_ViewMI.Size = new System.Drawing.Size(99, 22);
+            this.Attributes_ViewMI.Size = new System.Drawing.Size(180, 22);
             this.Attributes_ViewMI.Text = "View";
             this.Attributes_ViewMI.Click += new System.EventHandler(this.AttributesLV_DoubleClick);
             // 
@@ -90,6 +92,7 @@ namespace Opc.Ua.Client.Controls
             this.AttributesLV.ContextMenuStrip = this.AttributesMenu;
             this.AttributesLV.Dock = System.Windows.Forms.DockStyle.Fill;
             this.AttributesLV.FullRowSelect = true;
+            this.AttributesLV.HideSelection = false;
             this.AttributesLV.Location = new System.Drawing.Point(0, 0);
             this.AttributesLV.Name = "AttributesLV";
             this.AttributesLV.Size = new System.Drawing.Size(1003, 569);
@@ -111,6 +114,13 @@ namespace Opc.Ua.Client.Controls
             // 
             this.ValueCH.Text = "Value";
             // 
+            // jsonToolStripMenuItem
+            // 
+            this.Json_ViewMI.Name = "jsonToolStripMenuItem";
+            this.Json_ViewMI.Size = new System.Drawing.Size(180, 22);
+            this.Json_ViewMI.Text = "Json";
+            this.Json_ViewMI.Click += new System.EventHandler(this.jsonToolStripMenuItem_Click);
+            // 
             // AttributesListViewCtrl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -127,6 +137,7 @@ namespace Opc.Ua.Client.Controls
 
         private System.Windows.Forms.ContextMenuStrip AttributesMenu;
         private System.Windows.Forms.ToolStripMenuItem Attributes_ViewMI;
+        private System.Windows.Forms.ToolStripMenuItem Json_ViewMI;
         private System.Windows.Forms.ListView AttributesLV;
         private System.Windows.Forms.ColumnHeader NameCH;
         private System.Windows.Forms.ColumnHeader DataTypeCH;

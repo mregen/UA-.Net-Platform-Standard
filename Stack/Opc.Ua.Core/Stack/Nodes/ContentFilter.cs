@@ -1189,6 +1189,7 @@ namespace Opc.Ua
         /// <param name="context">The context.</param>
         /// <param name="index">The index.</param>
         /// <returns>The result of the validation</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Redundancy", "RCS1215:Expression is always equal to true/false.")]
         public override ServiceResult Validate(FilterContext context, int index)
         {
             if (m_index < 0)

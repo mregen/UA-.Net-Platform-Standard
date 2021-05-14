@@ -31,10 +31,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Opc.Ua.PubSub.Encoding;
 using Opc.Ua.PubSub.PublishedData;
+using Opc.Ua.PubSub.Tests.Encoding;
 
-namespace Opc.Ua.PubSub.Tests.Encoding
+namespace Opc.Ua.PubSub.Encoding.Tests
 {
     [TestFixture(Description = "Tests for Encoding/Decoding of JsonNetworkMessage objects")]
     public class MqttJsonNetworkMessageTests
@@ -125,7 +125,7 @@ namespace Opc.Ua.PubSub.Tests.Encoding
             Assert.IsNotNull(networkMessages, "connection.CreateNetworkMessages shall not return null");
             Assert.AreEqual(1, networkMessages.Count, "connection.CreateNetworkMessages shall return only one network message");
 
-            JsonNetworkMessage uaNetworkMessage = networkMessages[0] as JsonNetworkMessage;
+            JsonNetworkMessage uaNetworkMessage = networkMessages[0] as Opc.Ua.PubSub.Encoding.JsonNetworkMessage;
             // set PublisherId
             uaNetworkMessage.PublisherId = publisherId.ToString();
 

@@ -239,6 +239,12 @@
       <DependentUpon>HistoryEventCtrl.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\Client\ISessionForm.cs" />
+    <Compile Include="Common\Client\JsonEncoded.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Common\Client\JsonEncoded.Designer.cs">
+      <DependentUpon>JsonEncoded.cs</DependentUpon>
+    </Compile>
     <Compile Include="Common\Client\ReadRequestDlg.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -739,6 +745,9 @@
     <EmbeddedResource Include="Common\Client\HistoryEventCtrl.resx">
       <DependentUpon>HistoryEventCtrl.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Common\Client\JsonEncoded.resx">
+      <DependentUpon>JsonEncoded.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Common\Client\ReadRequestDlg.resx">
       <DependentUpon>ReadRequestDlg.cs</DependentUpon>

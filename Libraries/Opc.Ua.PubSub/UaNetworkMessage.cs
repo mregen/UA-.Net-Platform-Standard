@@ -90,6 +90,12 @@ namespace Opc.Ua.PubSub
         public abstract byte[] Encode();
 
         /// <summary>
+        /// Encodes the object and returns the resulting byte array.
+        /// </summary>
+        /// <returns></returns>
+        public abstract void Encode(ServiceMessageContext context, StreamWriter writer);
+
+        /// <summary>
         /// Decodes the message 
         /// </summary>
         /// <param name="message"></param>

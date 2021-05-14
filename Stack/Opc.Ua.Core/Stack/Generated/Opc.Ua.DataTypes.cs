@@ -8299,6 +8299,11 @@ namespace Opc.Ua
         /// <remarks />
         [EnumMember(Value = "RawData_32")]
         RawData = 32,
+
+        // TODO: prototyping
+        /// <remarks />
+        [EnumMember(Value = "Reversible_64")]
+        Reversible = 64,
     }
 
     #region DataSetFieldContentMaskCollection Class

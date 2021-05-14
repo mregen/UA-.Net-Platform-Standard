@@ -29,6 +29,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Opc.Ua.PubSub.Encoding
 {
@@ -267,6 +268,16 @@ namespace Opc.Ua.PubSub.Encoding
 
                 return bytes;
             }
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="writer"></param>
+        public override void Encode(ServiceMessageContext context, StreamWriter writer)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
